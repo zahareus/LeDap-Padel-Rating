@@ -158,3 +158,41 @@ legend {
     padding: 0 10px; /* Відступи для легенди */
     font-size: 1.1rem;
 }
+/* Додайте це в кінець css/style.css */
+.player-card {
+    display: flex; /* Розташування фото та інфо в один ряд */
+    align-items: center; /* Вертикальне вирівнювання по центру */
+    margin-bottom: 15px;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.player-photo-small {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%; /* Кругле фото */
+    margin-right: 20px;
+    object-fit: cover; /* Щоб фото не деформувалося, а обрізалося */
+    border: 2px solid #007bff; /* Рамка для фото */
+}
+
+.player-info {
+    flex-grow: 1; /* Щоб текстова інформація займала весь доступний простір */
+}
+
+.player-info h3 {
+    margin: 0 0 8px 0;
+    color: #0056b3;
+}
+
+.player-info p {
+    margin: 4px 0;
+    font-size: 0.95em;
+    color: #333;
+}
+
+.player-info p strong {
+    color: #111;
+}
