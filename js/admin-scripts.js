@@ -1,5 +1,5 @@
 // js/admin-scripts.js
-console.log('AIRTABLE_BASE_ID в admin-scripts.js:', typeof AIRTABLE_BASE_ID, AIRTABLE_BASE_ID);
+console.log('AIRTABLE_BASE_ID в admin-scripts.js:', typeof AIRTABLE_BASE_ID, AIRTABLE_BASE_ID); // Для діагностики
 
 document.addEventListener('DOMContentLoaded', function() {
     populatePlayerDropdowns();
@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.warn("Форму 'add-player-form' не знайдено.");
     }
     
-    // РОЗКОМЕНТОВУЄМО ТА АКТИВУЄМО ОБРОБНИК ДЛЯ ФОРМИ РЕЄСТРАЦІЇ МАТЧУ
     const recordMatchForm = document.getElementById('record-match-form');
     if (recordMatchForm) {
         recordMatchForm.addEventListener('submit', handleRecordMatch);
@@ -24,7 +23,7 @@ async function fetchPlayersForDropdown() {
     const tableName = 'Players';
     const sortField = 'Name'; 
     const sortDirection = 'asc';
-    const viewName = 'Grid view'; // Перевірте назву вашого представлення в Airtable
+    const viewName = 'Grid view'; // Перевірте назву вашого представлення в Airtable 'Players'
 
     const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableName}?maxRecords=100&view=${encodeURIComponent(viewName)}&sort[0][field]=${sortField}&sort[0][direction]=${sortDirection}`;
     
@@ -55,7 +54,7 @@ async function fetchPlayersForDropdown() {
 async function populatePlayerDropdowns() {
     console.log('Запускаємо populatePlayerDropdowns...');
     const players = await fetchPlayersForDropdown();
-    console.log('Гравці для дропдаунів отримані:', players); 
+    console.log('Гравці для дропдаунів отримані:', players.length > 0 ? players.length + ' гравців' : 'немає гравців'); 
 
     const dropdownIds = ['t1-player1', 't1-player2', 't2-player1', 't2-player2'];
     
@@ -143,9 +142,8 @@ async function handleAddPlayer(event) {
     }
 }
 
-// --- НОВА ФУНКЦІЯ ДЛЯ ОБРОБКИ РЕЗУЛЬТАТІВ МАТЧУ ---
 async function handleRecordMatch(event) {
-    event.preventDefault(); // Запобігаємо стандартній відправці форми
+    event.preventDefault(); 
     console.log("Форма реєстрації матчу відправлена.");
 
     // 1. Збір даних з форми
@@ -167,87 +165,118 @@ async function handleRecordMatch(event) {
         alert('Будь ласка, оберіть усіх чотирьох гравців.');
         return;
     }
-
     const playerIds = [t1p1_id, t1p2_id, t2p1_id, t2p2_id];
     const uniquePlayerIds = new Set(playerIds);
     if (uniquePlayerIds.size !== 4) {
         alert('Гравці не повинні повторюватися в одному матчі.');
         return;
     }
-
     if (isNaN(scoreTeam1) || isNaN(scoreTeam2) || scoreTeam1 < 0 || scoreTeam2 < 0) {
         alert('Будь ласка, введіть коректний рахунок (невід\'ємні числа).');
         return;
     }
-
     if (scoreTeam1 === scoreTeam2) {
         alert('Рахунок не може бути нічийним для зміни рейтингу.');
         return;
     }
-    // Перевірка, чи одна з команд виграла, наприклад, досягла 6 або 7, а інша менше
-    // (можна додати складнішу логіку валідації рахунку паделу, якщо потрібно)
-    if (!((scoreTeam1 >= 6 && scoreTeam1 > scoreTeam2 + 1 && scoreTeam1 <= 7) || 
-          (scoreTeam2 >= 6 && scoreTeam2 > scoreTeam1 + 1 && scoreTeam2 <= 7) ||
-          (scoreTeam1 === 7 && (scoreTeam2 === 5 || scoreTeam2 === 6)) || // Тай-брейк до 7
-          (scoreTeam2 === 7 && (scoreTeam1 === 5 || scoreTeam1 === 6)) )) {
-        // Це дуже приблизна валідація рахунку сету, можливо, її треба уточнити
-        // Зараз вона перевіряє класичні варіанти до 6 або 7 з різницею в 2, або тай-брейк 7-5, 7-6
-        // Якщо рахунок може бути іншим (наприклад, укорочені сети), цю перевірку треба адаптувати або прибрати.
-        // console.warn("Рахунок сету виглядає не стандартним, але обробка продовжиться.");
-    }
-
-
     if (!matchDate) {
         alert('Будь ласка, оберіть дату матчу.');
         return;
     }
 
     // 3. Отримання поточних даних гравців (Elo, GamesPlayed) з Airtable
-    // Нам потрібен масив ID для фільтрації
     const filterFormula = "OR(" + playerIds.map(id => `RECORD_ID()='${id}'`).join(',') + ")";
     const fetchPlayersUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Players?filterByFormula=${encodeURIComponent(filterFormula)}`;
-
     console.log("Запит для отримання даних гравців:", fetchPlayersUrl);
 
     try {
         const response = await fetch(fetchPlayersUrl, {
             headers: { 'Authorization': `Bearer ${AIRTABLE_PERSONAL_ACCESS_TOKEN}` }
         });
-
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Помилка отримання даних гравців з Airtable:', response.status, errorText);
             alert(`Не вдалося отримати дані гравців. Статус: ${response.status}. Деталі: ${errorText}`);
             return;
         }
-
         const playerDataResponse = await response.json();
-        const currentPlayersData = {}; // Об'єкт для зберігання { playerId: { elo: val, gamesPlayed: val, name: val, recordId: val }, ... }
-        
+        const currentPlayersData = {}; 
         if (playerDataResponse.records.length !== 4) {
             console.error('Отримано невірну кількість гравців:', playerDataResponse.records);
             alert('Не вдалося отримати дані для всіх обраних гравців. Перевірте консоль.');
             return;
         }
-
         playerDataResponse.records.forEach(record => {
             currentPlayersData[record.id] = {
                 elo: record.fields.Elo,
-                gamesPlayed: record.fields.GamesPlayed || 0, // Якщо GamesPlayed ще немає, ставимо 0
+                gamesPlayed: record.fields.GamesPlayed || 0,
                 name: record.fields.Name,
-                recordId: record.id // Зберігаємо record ID для PATCH запитів
+                recordId: record.id 
             };
         });
         console.log("Поточні дані гравців отримано:", currentPlayersData);
 
-        // Наступні кроки (будуть додані в наступних повідомленнях):
         // 4. Виклик elo-calculator.js
-        // 5. Підготовка даних для оновлення в Airtable (PATCH для Players, POST для Matches, POST для EloHistory)
-        // 6. Виконання запитів до Airtable
-        // 7. Обробка результатів та повідомлення користувачу
-        // 8. Очищення форми
+        const pA1 = currentPlayersData[t1p1_id];
+        const pA2 = currentPlayersData[t1p2_id];
+        const pB1 = currentPlayersData[t2p1_id];
+        const pB2 = currentPlayersData[t2p2_id];
 
-        alert('Дані з форми зібрано та валідовано. Поточні дані гравців отримано. Розрахунок та збереження будуть реалізовані наступним кроком.');
+        // Перевірка, чи всі дані гравців завантажено коректно перед розрахунком
+        if (!pA1 || !pA2 || !pB1 || !pB2) {
+            alert('Не вдалося отримати повні дані для всіх гравців. Розрахунок Ело неможливий.');
+            console.error('Дані для розрахунку Ело неповні:', {pA1, pA2, pB1, pB2});
+            return;
+        }
+        
+        const eloChangeForTeamA = calculateEloChangeForSet(
+            pA1.elo, pA2.elo, 
+            pB1.elo, pB2.elo, 
+            scoreTeam1, scoreTeam2
+        );
+        console.log("Розрахована зміна Ело для Команди A:", eloChangeForTeamA.toFixed(2));
+
+        // 5. Підготовка даних для оновлення в Airtable
+        const playersToUpdatePayload = {
+            records: [
+                { id: pA1.recordId, fields: { "Elo": Math.round(pA1.elo + eloChangeForTeamA), "GamesPlayed": pA1.gamesPlayed + 1 } },
+                { id: pA2.recordId, fields: { "Elo": Math.round(pA2.elo + eloChangeForTeamA), "GamesPlayed": pA2.gamesPlayed + 1 } },
+                { id: pB1.recordId, fields: { "Elo": Math.round(pB1.elo - eloChangeForTeamA), "GamesPlayed": pB1.gamesPlayed + 1 } },
+                { id: pB2.recordId, fields: { "Elo": Math.round(pB2.elo - eloChangeForTeamA), "GamesPlayed": pB2.gamesPlayed + 1 } }
+            ]
+        };
+        console.log("Дані для оновлення гравців (PATCH payload):", JSON.stringify(playersToUpdatePayload, null, 2));
+
+        const newMatchDataPayload = {
+            fields: {
+                "Team1_Player1": [t1p1_id], 
+                "Team1_Player2": [t1p2_id],
+                "Team2_Player1": [t2p1_id],
+                "Team2_Player2": [t2p2_id],
+                "Team1_Score": scoreTeam1,
+                "Team2_Score": scoreTeam2,
+                "MatchDate": matchDate,
+                "MatchProcessed": true 
+            }
+        };
+        console.log("Дані для нового матчу (POST payload):", JSON.stringify(newMatchDataPayload, null, 2));
+        
+        // EloHistory records will be prepared after we get the new Match ID
+        // For now, let's log what would be the content for Elo_After for history records
+        const eloHistoryPreview = [
+            { player: pA1.name, eloBefore: pA1.elo, eloAfter: Math.round(pA1.elo + eloChangeForTeamA) },
+            { player: pA2.name, eloBefore: pA2.elo, eloAfter: Math.round(pA2.elo + eloChangeForTeamA) },
+            { player: pB1.name, eloBefore: pB1.elo, eloAfter: Math.round(pB1.elo - eloChangeForTeamA) },
+            { player: pB2.name, eloBefore: pB2.elo, eloAfter: Math.round(pB2.elo - eloChangeForTeamA) }
+        ];
+        console.log("Попередній перегляд даних для історії Ело (після розрахунку):", eloHistoryPreview);
+
+
+        // 6. Виконання запитів до Airtable (буде реалізовано наступним кроком)
+        alert('Дані для оновлення підготовлено! Дивіться консоль. Надсилання на сервер буде наступним кроком.');
+        
+        // 7. Обробка результатів та повідомлення користувачу (наступним кроком)
+        // 8. Очищення форми (наступним кроком)
 
     } catch (error) {
         console.error('Сталася помилка JavaScript під час обробки матчу:', error);
