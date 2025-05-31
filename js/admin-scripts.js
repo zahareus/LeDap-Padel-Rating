@@ -1,7 +1,5 @@
-
 // js/admin-scripts.js
-
-console.log('AIRTABLE_BASE_ID в admin-scripts.js:', typeof AIRTABLE_BASE_ID, AIRTABLE_BASE_ID);
+console.log('AIRTABLE_BASE_ID в admin-scripts.js:', typeof AIRTABLE_BASE_ID, AIRTABLE_BASE_ID); // Для діагностики
 
 document.addEventListener('DOMContentLoaded', function() {
     populatePlayerDropdowns();
@@ -13,17 +11,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function fetchPlayersForDropdown() {
     const tableName = 'Players';
-    const sortField = 'Name'; // Сортуємо за іменем для зручності в дропдауні
-    const sortDirection = 'asc'; // За алфавітом
-
+    const sortField = 'Name'; 
+    const sortDirection = 'asc';
+    
     // УВАГА! ЗАМІНІТЬ 'Grid view' НА ТОЧНУ НАЗВУ ВАШОГО ПРЕДСТАВЛЕННЯ
     // В ТАБЛИЦІ 'Players' В AIRTABLE, ЯКЩО ВОНА ІНША!
     const viewName = 'Grid view'; 
 
-    // Ось АБСОЛЮТНО КОРЕКТНИЙ рядок для формування URL:
-    const url = `https://api.airtable.com/v0/<span class="math-inline">\{AIRTABLE\_BASE\_ID\}/</span>{tableName}?maxRecords=100&view=<span class="math-inline">\{encodeURIComponent\(viewName\)\}&sort\[0\]\[field\]\=</span>{sortField}&sort[0][direction]=${sortDirection}`;
-
-    console.log(`Запит до Airtable (admin-scripts): ${url}`); // Цей лог допоможе нам побачити правильний URL
+    // Ось КОРЕКТНИЙ рядок для формування URL, без жодних HTML-тегів:
+    const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableName}?maxRecords=100&view=${encodeURIComponent(viewName)}&sort[0][field]=${sortField}&sort[0][direction]=${sortDirection}`;
+    
+    console.log(`Запит до Airtable (admin-scripts): ${url}`); 
 
     try {
         const response = await fetch(url, {
@@ -50,9 +48,8 @@ async function fetchPlayersForDropdown() {
 async function populatePlayerDropdowns() {
     const players = await fetchPlayersForDropdown();
 
-    // Знаходимо всі наші select елементи
     const dropdownIds = ['t1-player1', 't1-player2', 't2-player1', 't2-player2'];
-
+    
     dropdownIds.forEach(dropdownId => {
         const selectElement = document.getElementById(dropdownId);
         if (selectElement) {
@@ -61,10 +58,9 @@ async function populatePlayerDropdowns() {
                 selectElement.remove(1);
             }
 
-            // Додаємо гравців у список
             players.forEach(playerRecord => {
                 const playerName = playerRecord.fields.Name;
-                const playerId = playerRecord.id; // Важливо: використовуємо ID запису Airtable як value
+                const playerId = playerRecord.id; 
 
                 if (playerName && playerId) {
                     const option = document.createElement('option');
