@@ -29,9 +29,9 @@
                         <input type="text" id="player-name" name="player-name" required>
                     </div>
                     <div>
-                        <label for="player-photo">Фото гравця (URL або завантаження):</label>
+                        <label for="player-photo">Фото гравця:</label>
                         <input type="file" id="player-photo" name="player-photo" accept="image/*">
-                        <small>Примітка: завантаження файлів з GitHub Pages напряму в Airtable потребуватиме складнішої логіки. Поки що це поле для майбутнього.</small>
+                        <small>Примітка: обробка фото буде реалізована пізніше. Поки що додавайте фото безпосередньо в Airtable.</small>
                     </div>
                     <button type="submit">Додати гравця</button>
                 </form>
@@ -56,8 +56,8 @@
                         </div>
                         <div>
                             <label for="t1-score">Рахунок Команди 1:</label>
-                            <input type="number" id="t1-score" name="t1-score" min="0" max="7" required>
-                        </div>
+                            <input type="number" id="t1-score" name="t1-score" min="0" max="10" value="0" required> 
+                            </div>
                     </fieldset>
 
                     <fieldset>
@@ -76,9 +76,15 @@
                         </div>
                         <div>
                             <label for="t2-score">Рахунок Команди 2:</label>
-                            <input type="number" id="t2-score" name="t2-score" min="0" max="7" required>
-                        </div>
+                            <input type="number" id="t2-score" name="t2-score" min="0" max="10" value="0" required>
+                             </div>
                     </fieldset>
+                    
+                    <div>
+                        <label for="match-date">Дата гри:</label>
+                        <input type="date" id="match-date" name="match-date" required>
+                    </div>
+
                     <button type="submit">Зареєструвати сет</button>
                 </form>
             </div>
@@ -88,7 +94,8 @@
     <footer>
         <p>&copy; 2025 LeDap Padel Community</p>
     </footer>
+
     <script src="js/airtable-config.js"></script>
     <script src="js/admin-scripts.js"></script>
-    </body>
+</body>
 </html>
