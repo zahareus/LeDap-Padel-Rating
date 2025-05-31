@@ -16,13 +16,14 @@ async function fetchPlayersForDropdown() {
     const sortField = 'Name'; // Сортуємо за іменем для зручності в дропдауні
     const sortDirection = 'asc'; // За алфавітом
 
-    // УВАГА! Сюди впишіть ТОЧНУ назву вашого представлення з таблиці 'Players' в Airtable
-    const viewName = 'Grid view'; // ЗАМІНІТЬ ЦЕ НА ВАШУ РЕАЛЬНУ НАЗВУ ПРЕДСТАВЛЕННЯ, ЯКЩО ВОНА ІНША!
+    // УВАГА! ЗАМІНІТЬ 'Grid view' НА ТОЧНУ НАЗВУ ВАШОГО ПРЕДСТАВЛЕННЯ
+    // В ТАБЛИЦІ 'Players' В AIRTABLE, ЯКЩО ВОНА ІНША!
+    const viewName = 'Grid view'; 
 
-    // Переконайтеся, що цей рядок для url чистий, без HTML-тегів
+    // Ось коректний рядок для формування URL:
     const url = `https://api.airtable.com/v0/<span class="math-inline">\{AIRTABLE\_BASE\_ID\}/</span>{tableName}?maxRecords=100&view=<span class="math-inline">\{encodeURIComponent\(viewName\)\}&sort\[0\]\[field\]\=</span>{sortField}&sort[0][direction]=${sortDirection}`;
 
-    console.log(`Запит до Airtable (admin-scripts): ${url}`); // Додамо лог URL для перевірки
+    console.log(`Запит до Airtable (admin-scripts): ${url}`); // Цей лог допоможе нам побачити правильний URL
 
     try {
         const response = await fetch(url, {
@@ -32,10 +33,9 @@ async function fetchPlayersForDropdown() {
         });
 
         if (!response.ok) {
-            const errorResponseText = await response.text(); // Отримуємо текст помилки від сервера
+            const errorResponseText = await response.text(); 
             console.error('Помилка завантаження гравців для дропдаунів (статус):', response.status);
             console.error('Тіло відповіді з помилкою від Airtable:', errorResponseText);
-            // playersListDiv (якщо є на цій сторінці) або інший спосіб показати помилку користувачу
             return []; 
         }
 
