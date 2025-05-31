@@ -1,6 +1,8 @@
 
 // js/admin-scripts.js
 
+console.log('AIRTABLE_BASE_ID в admin-scripts.js:', typeof AIRTABLE_BASE_ID, AIRTABLE_BASE_ID);
+
 document.addEventListener('DOMContentLoaded', function() {
     populatePlayerDropdowns();
 
