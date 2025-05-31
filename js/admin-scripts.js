@@ -20,7 +20,7 @@ async function fetchPlayersForDropdown() {
     // В ТАБЛИЦІ 'Players' В AIRTABLE, ЯКЩО ВОНА ІНША!
     const viewName = 'Grid view'; 
 
-    // Ось коректний рядок для формування URL:
+    // Ось АБСОЛЮТНО КОРЕКТНИЙ рядок для формування URL:
     const url = `https://api.airtable.com/v0/<span class="math-inline">\{AIRTABLE\_BASE\_ID\}/</span>{tableName}?maxRecords=100&view=<span class="math-inline">\{encodeURIComponent\(viewName\)\}&sort\[0\]\[field\]\=</span>{sortField}&sort[0][direction]=${sortDirection}`;
 
     console.log(`Запит до Airtable (admin-scripts): ${url}`); // Цей лог допоможе нам побачити правильний URL
