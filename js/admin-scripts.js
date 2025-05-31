@@ -1,5 +1,5 @@
 // js/admin-scripts.js
-console.log('AIRTABLE_BASE_ID в admin-scripts.js:', typeof AIRTABLE_BASE_ID, AIRTABLE_BASE_ID); // Для діагностики
+console.log('AIRTABLE_BASE_ID в admin-scripts.js:', typeof AIRTABLE_BASE_ID, AIRTABLE_BASE_ID);
 
 document.addEventListener('DOMContentLoaded', function() {
     populatePlayerDropdowns();
@@ -146,64 +146,68 @@ async function handleRecordMatch(event) {
     event.preventDefault(); 
     console.log("Форма реєстрації матчу відправлена.");
 
-    // 1. Збір даних з форми
+    const submitButton = event.target.querySelector('button[type="submit"]');
+    submitButton.disabled = true; // Блокуємо кнопку на час обробки
+    submitButton.textContent = 'Обробка...';
+
+    // 1. Збір даних з форми (без змін)
     const t1p1_id = document.getElementById('t1-player1').value;
     const t1p2_id = document.getElementById('t1-player2').value;
     const t2p1_id = document.getElementById('t2-player1').value;
     const t2p2_id = document.getElementById('t2-player2').value;
-
     const scoreTeam1 = parseInt(document.getElementById('t1-score').value);
     const scoreTeam2 = parseInt(document.getElementById('t2-score').value);
     const matchDate = document.getElementById('match-date').value;
 
-    console.log("Зібрані ID гравців:", { t1p1_id, t1p2_id, t2p1_id, t2p2_id });
-    console.log("Рахунок:", { scoreTeam1, scoreTeam2 });
-    console.log("Дата матчу:", matchDate);
-
-    // 2. Валідація даних
+    // 2. Валідація даних (без змін)
     if (!t1p1_id || !t1p2_id || !t2p1_id || !t2p2_id) {
         alert('Будь ласка, оберіть усіх чотирьох гравців.');
+        submitButton.disabled = false; submitButton.textContent = 'Зареєструвати сет';
         return;
     }
     const playerIds = [t1p1_id, t1p2_id, t2p1_id, t2p2_id];
     const uniquePlayerIds = new Set(playerIds);
     if (uniquePlayerIds.size !== 4) {
         alert('Гравці не повинні повторюватися в одному матчі.');
+        submitButton.disabled = false; submitButton.textContent = 'Зареєструвати сет';
         return;
     }
     if (isNaN(scoreTeam1) || isNaN(scoreTeam2) || scoreTeam1 < 0 || scoreTeam2 < 0) {
         alert('Будь ласка, введіть коректний рахунок (невід\'ємні числа).');
+        submitButton.disabled = false; submitButton.textContent = 'Зареєструвати сет';
         return;
     }
     if (scoreTeam1 === scoreTeam2) {
         alert('Рахунок не може бути нічийним для зміни рейтингу.');
+        submitButton.disabled = false; submitButton.textContent = 'Зареєструвати сет';
         return;
     }
     if (!matchDate) {
         alert('Будь ласка, оберіть дату матчу.');
+        submitButton.disabled = false; submitButton.textContent = 'Зареєструвати сет';
         return;
     }
 
-    // 3. Отримання поточних даних гравців (Elo, GamesPlayed) з Airtable
+    // 3. Отримання поточних даних гравців (без змін)
     const filterFormula = "OR(" + playerIds.map(id => `RECORD_ID()='${id}'`).join(',') + ")";
     const fetchPlayersUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Players?filterByFormula=${encodeURIComponent(filterFormula)}`;
-    console.log("Запит для отримання даних гравців:", fetchPlayersUrl);
-
+    
     try {
-        const response = await fetch(fetchPlayersUrl, {
+        const playerDetailsResponse = await fetch(fetchPlayersUrl, {
             headers: { 'Authorization': `Bearer ${AIRTABLE_PERSONAL_ACCESS_TOKEN}` }
         });
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Помилка отримання даних гравців з Airtable:', response.status, errorText);
-            alert(`Не вдалося отримати дані гравців. Статус: ${response.status}. Деталі: ${errorText}`);
+        if (!playerDetailsResponse.ok) {
+            const errorText = await playerDetailsResponse.text();
+            console.error('Помилка отримання даних гравців з Airtable:', playerDetailsResponse.status, errorText);
+            alert(`Не вдалося отримати дані гравців. Статус: ${playerDetailsResponse.status}. Деталі: ${errorText}`);
+            submitButton.disabled = false; submitButton.textContent = 'Зареєструвати сет';
             return;
         }
-        const playerDataResponse = await response.json();
+        const playerDataResponse = await playerDetailsResponse.json();
         const currentPlayersData = {}; 
         if (playerDataResponse.records.length !== 4) {
-            console.error('Отримано невірну кількість гравців:', playerDataResponse.records);
             alert('Не вдалося отримати дані для всіх обраних гравців. Перевірте консоль.');
+            submitButton.disabled = false; submitButton.textContent = 'Зареєструвати сет';
             return;
         }
         playerDataResponse.records.forEach(record => {
@@ -214,30 +218,21 @@ async function handleRecordMatch(event) {
                 recordId: record.id 
             };
         });
-        console.log("Поточні дані гравців отримано:", currentPlayersData);
-
-        // 4. Виклик elo-calculator.js
+        
+        // 4. Виклик elo-calculator.js (без змін)
         const pA1 = currentPlayersData[t1p1_id];
         const pA2 = currentPlayersData[t1p2_id];
         const pB1 = currentPlayersData[t2p1_id];
         const pB2 = currentPlayersData[t2p2_id];
-
-        // Перевірка, чи всі дані гравців завантажено коректно перед розрахунком
         if (!pA1 || !pA2 || !pB1 || !pB2) {
             alert('Не вдалося отримати повні дані для всіх гравців. Розрахунок Ело неможливий.');
-            console.error('Дані для розрахунку Ело неповні:', {pA1, pA2, pB1, pB2});
+            submitButton.disabled = false; submitButton.textContent = 'Зареєструвати сет';
             return;
         }
-        
-        const eloChangeForTeamA = calculateEloChangeForSet(
-            pA1.elo, pA2.elo, 
-            pB1.elo, pB2.elo, 
-            scoreTeam1, scoreTeam2
-        );
-        console.log("Розрахована зміна Ело для Команди A:", eloChangeForTeamA.toFixed(2));
+        const eloChangeForTeamA = calculateEloChangeForSet(pA1.elo, pA2.elo, pB1.elo, pB2.elo, scoreTeam1, scoreTeam2);
 
-        // 5. Підготовка даних для оновлення в Airtable
-        const playersToUpdatePayload = {
+        // 5. Підготовка даних (змінено назви payload на більш описові)
+        const playersUpdateData = {
             records: [
                 { id: pA1.recordId, fields: { "Elo": Math.round(pA1.elo + eloChangeForTeamA), "GamesPlayed": pA1.gamesPlayed + 1 } },
                 { id: pA2.recordId, fields: { "Elo": Math.round(pA2.elo + eloChangeForTeamA), "GamesPlayed": pA2.gamesPlayed + 1 } },
@@ -245,41 +240,107 @@ async function handleRecordMatch(event) {
                 { id: pB2.recordId, fields: { "Elo": Math.round(pB2.elo - eloChangeForTeamA), "GamesPlayed": pB2.gamesPlayed + 1 } }
             ]
         };
-        console.log("Дані для оновлення гравців (PATCH payload):", JSON.stringify(playersToUpdatePayload, null, 2));
-
-        const newMatchDataPayload = {
-            fields: {
-                "Team1_Player1": [t1p1_id], 
-                "Team1_Player2": [t1p2_id],
-                "Team2_Player1": [t2p1_id],
-                "Team2_Player2": [t2p2_id],
-                "Team1_Score": scoreTeam1,
-                "Team2_Score": scoreTeam2,
-                "MatchDate": matchDate,
-                "MatchProcessed": true 
-            }
+        const matchCreateData = {
+            records: [{ // Для створення одного запису також потрібен масив records з одним об'єктом
+                fields: {
+                    "Team1_Player1": [t1p1_id], 
+                    "Team1_Player2": [t1p2_id],
+                    "Team2_Player1": [t2p1_id],
+                    "Team2_Player2": [t2p2_id],
+                    "Team1_Score": scoreTeam1,
+                    "Team2_Score": scoreTeam2,
+                    "MatchDate": matchDate,
+                    "MatchProcessed": true 
+                }
+            }]
         };
-        console.log("Дані для нового матчу (POST payload):", JSON.stringify(newMatchDataPayload, null, 2));
         
-        // EloHistory records will be prepared after we get the new Match ID
-        // For now, let's log what would be the content for Elo_After for history records
-        const eloHistoryPreview = [
-            { player: pA1.name, eloBefore: pA1.elo, eloAfter: Math.round(pA1.elo + eloChangeForTeamA) },
-            { player: pA2.name, eloBefore: pA2.elo, eloAfter: Math.round(pA2.elo + eloChangeForTeamA) },
-            { player: pB1.name, eloBefore: pB1.elo, eloAfter: Math.round(pB1.elo - eloChangeForTeamA) },
-            { player: pB2.name, eloBefore: pB2.elo, eloAfter: Math.round(pB2.elo - eloChangeForTeamA) }
-        ];
-        console.log("Попередній перегляд даних для історії Ело (після розрахунку):", eloHistoryPreview);
+        // 6. Виконання запитів до Airtable
+        console.log("Надсилаємо оновлення для гравців:", JSON.stringify(playersUpdateData));
+        const updatePlayersResponse = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Players`, {
+            method: 'PATCH', // Використовуємо PATCH для оновлення існуючих записів
+            headers: {
+                'Authorization': `Bearer ${AIRTABLE_PERSONAL_ACCESS_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(playersUpdateData)
+        });
 
+        if (!updatePlayersResponse.ok) {
+            const errorText = await updatePlayersResponse.text();
+            console.error('Помилка оновлення даних гравців в Airtable:', updatePlayersResponse.status, errorText);
+            alert(`Не вдалося оновити дані гравців. Статус: ${updatePlayersResponse.status}. Деталі: ${errorText}`);
+            submitButton.disabled = false; submitButton.textContent = 'Зареєструвати сет';
+            return;
+        }
+        console.log("Дані гравців успішно оновлено.");
 
-        // 6. Виконання запитів до Airtable (буде реалізовано наступним кроком)
-        alert('Дані для оновлення підготовлено! Дивіться консоль. Надсилання на сервер буде наступним кроком.');
+        // Створюємо запис про матч
+        console.log("Надсилаємо дані для створення матчу:", JSON.stringify(matchCreateData));
+        const createMatchResponse = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Matches`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${AIRTABLE_PERSONAL_ACCESS_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(matchCreateData)
+        });
+
+        if (!createMatchResponse.ok) {
+            const errorText = await createMatchResponse.text();
+            console.error('Помилка створення запису матчу в Airtable:', createMatchResponse.status, errorText);
+            alert(`Не вдалося створити запис матчу. Статус: ${createMatchResponse.status}. Деталі: ${errorText}`);
+            submitButton.disabled = false; submitButton.textContent = 'Зареєструвати сет';
+            return;
+        }
+        const createdMatchResult = await createMatchResponse.json();
+        const newMatchId = createdMatchResult.records[0].id; // Отримуємо ID створеного матчу
+        console.log("Запис матчу успішно створено. ID матчу:", newMatchId);
+
+        // Готуємо та створюємо записи для EloHistory
+        const eloHistoryCreateData = {
+            records: [
+                { fields: { "Player": [pA1.recordId], "Match": [newMatchId], "Elo_Before": pA1.elo, "Elo_After": Math.round(pA1.elo + eloChangeForTeamA), "Change": Math.round(eloChangeForTeamA) } },
+                { fields: { "Player": [pA2.recordId], "Match": [newMatchId], "Elo_Before": pA2.elo, "Elo_After": Math.round(pA2.elo + eloChangeForTeamA), "Change": Math.round(eloChangeForTeamA) } },
+                { fields: { "Player": [pB1.recordId], "Match": [newMatchId], "Elo_Before": pB1.elo, "Elo_After": Math.round(pB1.elo - eloChangeForTeamA), "Change": Math.round(-eloChangeForTeamA) } },
+                { fields: { "Player": [pB2.recordId], "Match": [newMatchId], "Elo_Before": pB2.elo, "Elo_After": Math.round(pB2.elo - eloChangeForTeamA), "Change": Math.round(-eloChangeForTeamA) } }
+            ]
+        };
+        console.log("Надсилаємо дані для історії Ело:", JSON.stringify(eloHistoryCreateData));
+        const createEloHistoryResponse = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/EloHistory`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${AIRTABLE_PERSONAL_ACCESS_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(eloHistoryCreateData)
+        });
+
+        if (!createEloHistoryResponse.ok) {
+            const errorText = await createEloHistoryResponse.text();
+            console.error('Помилка створення записів історії Ело в Airtable:', createEloHistoryResponse.status, errorText);
+            // На цьому етапі основні дані вже збережено, тому можна не зупиняти все, а просто попередити
+            alert(`Увага: Не вдалося створити записи історії Ело. Статус: ${createEloHistoryResponse.status}. Деталі: ${errorText}`);
+        } else {
+            console.log("Записи історії Ело успішно створено.");
+        }
+
+        // 7. Обробка результатів та повідомлення користувачу
+        alert('Результат матчу успішно зареєстровано та рейтинги оновлено!');
         
-        // 7. Обробка результатів та повідомлення користувачу (наступним кроком)
-        // 8. Очищення форми (наступним кроком)
+        // 8. Очищення форми
+        document.getElementById('record-match-form').reset(); // Скидає всі поля форми до початкових значень
+        // Оновлюємо дропдауни, якщо раптом список гравців змінився (малоймовірно на цьому етапі, але для консистентності)
+        // або якщо ми захочемо показувати їх поточний Elo в дропдаунах у майбутньому.
+        await populatePlayerDropdowns();
+
 
     } catch (error) {
         console.error('Сталася помилка JavaScript під час обробки матчу:', error);
         alert('Сталася помилка JavaScript. Деталі в консолі.');
+    } finally {
+        // Повертаємо кнопку до активного стану
+        submitButton.disabled = false;
+        submitButton.textContent = 'Зареєструвати сет';
     }
 }
