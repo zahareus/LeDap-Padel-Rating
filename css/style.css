@@ -196,3 +196,64 @@ legend {
 .player-info p strong {
     color: #111;
 }
+
+/* === Стилі для сторінки games.html === */
+
+#games-list-section h2 {
+    text-align: center;
+    color: #007bff;
+    margin-bottom: 20px;
+}
+
+.game-date-header {
+    margin-top: 30px;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #007bff;
+    color: #0056b3;
+    font-size: 1.4em;
+}
+
+.game-entry {
+    background-color: #f9f9f9;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #e7e7e7;
+}
+
+.game-entry p.game-teams {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+    font-size: 1.1em;
+}
+
+.game-teams .team {
+    flex-basis: 40%; /* Задаємо базову ширину для команд */
+}
+
+.game-teams .team1 {
+    text-align: right; /* Вирівнюємо першу команду праворуч */
+    padding-right: 10px;
+}
+
+.game-teams .team2 {
+    text-align: left; /* Вирівнюємо другу команду ліворуч */
+    padding-left: 10px;
+}
+
+.game-teams .game-score {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #333;
+    padding: 0 15px;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+}
+
+.game-teams .team.winner strong {
+    color: #28a745; /* Зелений колір для імен переможців */
+    font-weight: bold;
+}
