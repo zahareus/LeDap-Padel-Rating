@@ -16,8 +16,8 @@ async function fetchPlayersForDropdown() {
     const sortDirection = 'asc';
     const viewName = 'Grid view'; // Перевірте назву вашого представлення в Airtable
 
-    const url = `https://api.airtable.com/v0/<span class="math-inline">\{AIRTABLE\_BASE\_ID\}/</span>{tableName}?view=<span class="math-inline">\{encodeURIComponent\(viewName\)\}&sort\[0\]\[field\]\=</span>{sortField}&sort[0][direction]=${sortDirection}`;
-
+    const url = `https://api.airtable.com/v0/<span class="math-inline">\{AIRTABLE\_BASE\_ID\}/</span>{tableName}`;
+    
     try {
         const response = await fetch(url, {
             headers: {
