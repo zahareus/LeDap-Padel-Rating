@@ -18,8 +18,9 @@ async function fetchPlayersForDropdown() {
     const sortDirection = 'asc';
     const viewName = 'Grid view'; // Перевірте назву вашого представлення в Airtable
 
-    const url = `https://api.airtable.com/v0/<span class="math-inline">\{AIRTABLE\_BASE\_ID\}/</span>{tableName}`;
-    
+    // ОЦЕЙ РЯДОК МИ ВИПРАВЛЯЄМО:
+    const url = `https://api.airtable.com/v0/<span class="math-inline">\{AIRTABLE\_BASE\_ID\}/</span>{tableName}?maxRecords=100&view=<span class="math-inline">\{encodeURIComponent\(viewName\)\}&sort\[0\]\[field\]\=</span>{sortField}&sort[0][direction]=${sortDirection}`;
+
     try {
         const response = await fetch(url, {
             headers: {
@@ -27,11 +28,11 @@ async function fetchPlayersForDropdown() {
             }
         });
         if (!response.ok) {
-            console.error('Помилка завантаження гравців для дропдаунів:', response.status);
-            return []; // Повертаємо порожній масив у разі помилки
+            console.error('Помилка завантаження гравців для дропдаунів:', response.status, await response.text()); // Додав await response.text() для детальнішої помилки
+            return []; 
         }
         const data = await response.json();
-        return data.records; // Повертаємо масив записів гравців
+        return data.records; 
     } catch (error) {
         console.error('Сталася помилка при завантаженні гравців для дропдаунів:', error);
         return [];
