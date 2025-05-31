@@ -87,7 +87,7 @@ async function fetchAndDisplayPlayers() {
 
 // Додаткові стилі для .player-card та .player-photo-small можуть знадобитися в style.css
 // Наприклад:
-// .player-card { display: flex; align-items: center; margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 5px; }
-// .player-photo-small { width: 60px; height: 60px; border-radius: 50%; margin-right: 15px; object-fit: cover; }
-// .player-info h3 { margin: 0 0 5px 0; }
-// .player-info p { margin: 0; font-size: 0.9em; }
+.player-card { display: flex; align-items: center; margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 5px; }
+.player-photo-small { width: 60px; height: 60px; border-radius: 50%; margin-right: 15px; object-fit: cover; }
+.player-info h3 { margin: 0 0 5px 0; }
+.player-info p { margin: 0; font-size: 0.9em; }
