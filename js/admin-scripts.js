@@ -13,13 +13,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function fetchPlayersForDropdown() {
     const tableName = 'Players';
-    // Для випадаючих списків можемо сортувати за іменем для зручності
-    const sortField = 'Name';
-    const sortDirection = 'asc';
-    const viewName = 'Grid view'; // Перевірте назву вашого представлення в Airtable
+    const sortField = 'Name'; // Сортуємо за іменем для зручності в дропдауні
+    const sortDirection = 'asc'; // За алфавітом
 
-    // ОЦЕЙ РЯДОК МИ ВИПРАВЛЯЄМО:
+    // УВАГА! Сюди впишіть ТОЧНУ назву вашого представлення з таблиці 'Players' в Airtable
+    const viewName = 'Grid view'; // ЗАМІНІТЬ ЦЕ НА ВАШУ РЕАЛЬНУ НАЗВУ ПРЕДСТАВЛЕННЯ, ЯКЩО ВОНА ІНША!
+
+    // Переконайтеся, що цей рядок для url чистий, без HTML-тегів
     const url = `https://api.airtable.com/v0/<span class="math-inline">\{AIRTABLE\_BASE\_ID\}/</span>{tableName}?maxRecords=100&view=<span class="math-inline">\{encodeURIComponent\(viewName\)\}&sort\[0\]\[field\]\=</span>{sortField}&sort[0][direction]=${sortDirection}`;
+
+    console.log(`Запит до Airtable (admin-scripts): ${url}`); // Додамо лог URL для перевірки
 
     try {
         const response = await fetch(url, {
@@ -27,14 +30,19 @@ async function fetchPlayersForDropdown() {
                 'Authorization': `Bearer ${AIRTABLE_PERSONAL_ACCESS_TOKEN}`
             }
         });
+
         if (!response.ok) {
-            console.error('Помилка завантаження гравців для дропдаунів:', response.status, await response.text()); // Додав await response.text() для детальнішої помилки
+            const errorResponseText = await response.text(); // Отримуємо текст помилки від сервера
+            console.error('Помилка завантаження гравців для дропдаунів (статус):', response.status);
+            console.error('Тіло відповіді з помилкою від Airtable:', errorResponseText);
+            // playersListDiv (якщо є на цій сторінці) або інший спосіб показати помилку користувачу
             return []; 
         }
+
         const data = await response.json();
         return data.records; 
     } catch (error) {
-        console.error('Сталася помилка при завантаженні гравців для дропдаунів:', error);
+        console.error('Сталася помилка JavaScript під час завантаження гравців для дропдаунів:', error);
         return [];
     }
 }
