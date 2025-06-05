@@ -58,7 +58,11 @@ async function fetchAndDisplayPlayers() {
                     ${photoHtml}
                     <div class="player-info">
                         <h3>${player.Name || 'N/A'}</h3>
-                        <p><strong>Рейтинг Ело:</strong> ${player.Elo !== undefined ? player.Elo.toFixed(0) : 'N/A'}</p>
+                        <p><strong>Рейтинг Ело:</strong> ${
+                            player.Elo !== undefined && !isNaN(parseFloat(player.Elo))
+                                ? Number(parseFloat(player.Elo)).toFixed(0)
+                                : 'N/A'
+                        }</p>
                         <p><strong>Зіграно сетів:</strong> ${player.GamesPlayed !== undefined ? player.GamesPlayed : 'N/A'}</p>
                     </div>
                 `;
