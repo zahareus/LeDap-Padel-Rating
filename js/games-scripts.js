@@ -12,16 +12,22 @@ async function fetchAndDisplayGames() {
     const tableName = 'Matches';
     const sortField = 'MatchDate';
     const sortDirection = 'desc';
-    const viewName = 'Grid view';
-    const fieldsToFetch = ['MatchDate', 'Team1_Score', 'Team2_Score', 'T1P1_Name', 'T1P2_Name', 'T2P1_Name', 'T2P2_Name'];
+    const viewName = 'Grid view'; 
+
+    // Додаємо нові поля з історичним Ело та розіграними очками до списку полів, які треба завантажити
+    const fieldsToFetch = [
+        'MatchDate', 'Team1_Score', 'Team2_Score', 
+        'T1P1_Name', 'T1P2_Name', 'T2P1_Name', 'T2P2_Name', 
+        'T1P1_Elo_Before', 'T1P2_Elo_Before', 'T2P1_Elo_Before', 'T2P2_Elo_Before', 
+        'Elo_Exchanged'
+    ];
     let url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableName}?view=${encodeURIComponent(viewName)}&sort[0][field]=${sortField}&sort[0][direction]=${sortDirection}`;
     fieldsToFetch.forEach(field => { url += `&fields[]=${encodeURIComponent(field)}`; });
 
     try {
         const response = await fetch(url, { headers: { 'Authorization': `Bearer ${AIRTABLE_PERSONAL_ACCESS_TOKEN}` } });
-        if (!response.ok) {
-            throw new Error(`Помилка завантаження даних: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Помилка завантаження даних: ${response.status}`);
+        
         const data = await response.json();
         const matches = data.records;
 
@@ -52,26 +58,41 @@ async function fetchAndDisplayGames() {
                     const gameElement = document.createElement('div');
                     gameElement.className = 'p-4';
 
-                    const t1p1 = match.T1P1_Name ? match.T1P1_Name[0] : 'N/A';
-                    const t1p2 = match.T1P2_Name ? match.T1P2_Name[0] : 'N/A';
-                    const t2p1 = match.T2P1_Name ? match.T2P1_Name[0] : 'N/A';
-                    const t2p2 = match.T2P2_Name ? match.T2P2_Name[0] : 'N/A';
+                    // --- ПОЧАТОК НОВОЇ ЛОГІКИ ВІДОБРАЖЕННЯ ---
+                    const t1p1Name = match.T1P1_Name ? match.T1P1_Name[0] : 'N/A';
+                    const t1p1Elo = match.T1P1_Elo_Before !== undefined ? `(${match.T1P1_Elo_Before})` : '';
+                    const t1p2Name = match.T1P2_Name ? match.T1P2_Name[0] : 'N/A';
+                    const t1p2Elo = match.T1P2_Elo_Before !== undefined ? `(${match.T1P2_Elo_Before})` : '';
+
+                    const t2p1Name = match.T2P1_Name ? match.T2P1_Name[0] : 'N/A';
+                    const t2p1Elo = match.T2P1_Elo_Before !== undefined ? `(${match.T2P1_Elo_Before})` : '';
+                    const t2p2Name = match.T2P2_Name ? match.T2P2_Name[0] : 'N/A';
+                    const t2p2Elo = match.T2P2_Elo_Before !== undefined ? `(${match.T2P2_Elo_Before})` : '';
+
                     const score1 = match.Team1_Score !== undefined ? match.Team1_Score : '-';
                     const score2 = match.Team2_Score !== undefined ? match.Team2_Score : '-';
+                    const eloExchanged = match.Elo_Exchanged !== undefined ? `(${match.Elo_Exchanged})` : '';
+
                     const team1WinnerClass = score1 > score2 ? 'winner' : '';
                     const team2WinnerClass = score2 > score1 ? 'winner' : '';
 
                     gameElement.innerHTML = `
                         <div class="flex justify-between items-center text-gray-800">
                             <div class="team text-right w-2/5 ${team1WinnerClass}">
-                                <strong class="font-medium">${t1p1}</strong> / <strong class="font-medium">${t1p2}</strong>
+                                <strong class="font-medium">${t1p1Name}</strong> <span class="text-sm text-gray-500">${t1p1Elo}</span> / 
+                                <strong class="font-medium">${t1p2Name}</strong> <span class="text-sm text-gray-500">${t1p2Elo}</span>
                             </div>
-                            <div class="font-bold text-lg text-blue-600 px-4">${score1} : ${score2}</div>
+                            <div class="font-bold text-lg text-blue-600 px-4">
+                                ${score1} : ${score2}
+                                <span class="block text-xs font-normal text-gray-500">${eloExchanged}</span>
+                            </div>
                             <div class="team text-left w-2/5 ${team2WinnerClass}">
-                                <strong class="font-medium">${t2p1}</strong> / <strong class="font-medium">${t2p2}</strong>
+                                <strong class="font-medium">${t2p1Name}</strong> <span class="text-sm text-gray-500">${t2p1Elo}</span> / 
+                                <strong class="font-medium">${t2p2Name}</strong> <span class="text-sm text-gray-500">${t2p2Elo}</span>
                             </div>
                         </div>
                     `;
+                    // --- КІНЕЦЬ НОВОЇ ЛОГІКИ ВІДОБРАЖЕННЯ ---
                     gamesContainerForDate.appendChild(gameElement);
                 }
             });
