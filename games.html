@@ -1,35 +1,53 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ігри 👑 LeDap Padel Rating Torrevieja</title>
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="css/style.css">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Ігри - LeDap Padel Rating</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f7fafc;
+        }
+        .team.winner strong {
+             color: #16a34a; /* Green-600 for Tailwind */
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>👑 LeDap Padel Rating Torrevieja</h1>
-        <nav>
-            <ul>
-                <li><a href="index.html">🏆 Рейтинг</a></li>
-                <li><a href="games.html" class="active">🎾 Ігри</a></li>
-                <li><a href="elo-info.html">ℹ️ Про систему Ело</a></li>
-            </ul>
-        </nav>
+    <header class="bg-blue-600 text-white py-6 shadow-md">
+        <div class="container mx-auto px-4 flex flex-col sm:flex-row justify-between items-center">
+            <h1 class="text-2xl font-bold flex items-center">
+                <span class="material-icons mr-2 text-yellow-400">sports_tennis</span>
+                LeDap Padel Rating Torrevieja
+            </h1>
+            <nav class="mt-4 sm:mt-0 flex space-x-4">
+                <a class="flex items-center hover:text-yellow-300 transition-colors" href="index.html">
+                    <span class="material-icons mr-1">leaderboard</span>Рейтинг
+                </a>
+                <a class="flex items-center hover:text-yellow-300 transition-colors" href="games.html">
+                    <span class="material-icons mr-1">sports_esports</span>Ігри
+                </a>
+                <a class="flex items-center hover:text-yellow-300 transition-colors" href="elo-info.html">
+                    <span class="material-icons mr-1">info</span>Про систему Ело
+                </a>
+            </nav>
+        </div>
     </header>
 
-    <main>
-        <section id="games-list-section">
-            <h2>Список зіграних сетів</h2>
-            <div id="games-list-container">
-                <p>Завантаження списку ігор...</p>
-            </div>
-        </section>
+    <main class="container mx-auto px-4 py-8">
+        <h2 class="text-2xl font-semibold text-gray-700 mb-6 text-center">Список зіграних сетів</h2>
+        <div id="games-list-container">
+            <p class="p-4 text-center text-gray-500">Завантаження списку ігор...</p>
+        </div>
     </main>
 
-    <footer>
-        <p>&copy; 2025 LeDap Padel Community</p>
+    <footer class="py-6 text-center text-gray-500 text-sm">
+        © 2025 LeDap Padel Torrevieja. Всі права захищені.
     </footer>
 
     <script src="js/airtable-config.js"></script>
