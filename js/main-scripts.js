@@ -44,8 +44,8 @@ async function initializeApp() {
             throw new Error(`Помилка завантаження даних: ${response.status}`);
         }
         const data = await response.json();
-        allPlayersData = data.records; // Зберігаємо дані в глобальну змінну
-        renderPlayerList(); // Відображаємо список (за замовчуванням - за Ело)
+        allPlayersData = data.records; 
+        renderPlayerList(); 
 
     } catch (error) {
         console.error('Сталася помилка під час виконання запиту:', error);
@@ -58,7 +58,6 @@ function calculateSetRating(playerFields) {
     const elo = playerFields.Elo || 1500;
     const games = playerFields.GamesPlayed || 0;
     
-    // Щоб уникнути ділення на нуль
     if (games === 0) {
         return 0;
     }
@@ -90,12 +89,10 @@ function updateButtonStyles() {
 // Головна функція для відображення списку гравців
 function renderPlayerList() {
     const playersListDiv = document.getElementById('players-ranking-list');
-    playersListDiv.innerHTML = ''; // Очищуємо контейнер
+    playersListDiv.innerHTML = ''; 
 
-    // Копіюємо масив, щоб не змінювати оригінальний порядок
     let sortedPlayers = [...allPlayersData];
 
-    // Сортуємо масив в залежності від обраного режиму
     if (currentRatingMode === 'elo') {
         sortedPlayers.sort((a, b) => (b.fields.Elo || 0) - (a.fields.Elo || 0));
     } else { // 'set' mode
@@ -106,8 +103,13 @@ function renderPlayerList() {
         let rank = 1;
         sortedPlayers.forEach(playerRecord => {
             const player = playerRecord.fields;
-            const playerCard = document.createElement('div');
-            playerCard.className = 'p-4 hover:bg-gray-50 transition-colors';
+            const playerId = playerRecord.id;
+
+            // --- ОСНОВНА ЗМІНА ТУТ ---
+            // Створюємо посилання <a>, яке обгортає всю картку
+            const playerLink = document.createElement('a');
+            playerLink.href = `player.html?id=${playerId}`;
+            playerLink.className = 'block p-4 hover:bg-gray-50 transition-colors'; // Робимо посилання блочним елементом
 
             const photoUrl = (player.Photo && player.Photo.length > 0) ? player.Photo[0].url : 'https://via.placeholder.com/48';
             const rankColor = (rank === 1 && currentRatingMode === 'elo') ? 'text-yellow-500' : 'text-gray-400';
@@ -121,8 +123,9 @@ function renderPlayerList() {
                 const setRating = calculateSetRating(player).toFixed(3);
                 ratingHtml = `<div class="text-sm text-gray-600">Сетовий рейтинг: <span class="font-semibold text-blue-600">${setRating}</span></div>`;
             }
-
-            playerCard.innerHTML = `
+            
+            // Внутрішній HTML картки вставляємо в посилання
+            playerLink.innerHTML = `
                 <div class="flex items-center space-x-4">
                     <img alt="${player.Name || 'Фото гравця'}" class="w-12 h-12 rounded-full object-cover" src="${photoUrl}"/>
                     <div class="flex-grow">
@@ -133,7 +136,7 @@ function renderPlayerList() {
                     <div class="text-xl font-bold ${rankColor}">#${rank}</div>
                 </div>
             `;
-            playersListDiv.appendChild(playerCard);
+            playersListDiv.appendChild(playerLink); // Додаємо посилання (з карткою всередині) до списку
             rank++;
         });
     } else {
