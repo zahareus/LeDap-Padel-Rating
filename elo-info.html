@@ -13,7 +13,6 @@
             font-family: 'Roboto', sans-serif;
             background-color: #f7fafc;
         }
-        /* Стиль для блоків з прикладами */
         .example-block {
             background-color: #f9fafb; /* bg-gray-50 */
             border: 1px solid #e5e7eb; /* border-gray-200 */
@@ -61,25 +60,9 @@
                 </ol>
 
                 <h3 class="text-xl font-bold mt-8 mb-4 text-gray-800 border-b pb-2">Як розраховується рейтинг?</h3>
-                <p>Процес розрахунку відбувається в кілька кроків:</p>
-                <ol class="list-decimal list-inside space-y-4">
-                    <li>
-                        <strong>Середній рейтинг пари:</strong> Спочатку обчислюється середній рейтинг Ело для кожної з двох пар, що грають.
-                    </li>
-                    <li>
-                        <strong>Очікуваний результат:</strong> На основі різниці в середніх рейтингах пар система розраховує очікуваний результат матчу ($E_A$).
-                        <div class="my-3 p-4 bg-gray-100 rounded-lg text-center font-mono text-lg text-gray-800 shadow-inner">$E_{A} = \frac{1}{1 + 10^{(R_{B} - R_{A}) / 400}}$</div>
-                    </li>
-                    <li>
-                        <strong>Множник різниці в геймах (GDM):</strong> Щоб врахувати, наскільки переконливою була перемога, розраховується спеціальний множник.
-                         <div class="my-3 p-4 bg-gray-100 rounded-lg text-center font-mono text-lg text-gray-800 shadow-inner">$GDM = 1 + (0.1 \times |Рахунок_A - Рахунок_Б|)$</div>
-                    </li>
-                     <li>
-                        <strong>Фінальний розрахунок:</strong> Зміна рейтингу розраховується з урахуванням K-фактора, різниці між фактичним ($S_A$) та очікуваним результатом, та множника GDM.
-                        <div class="my-3 p-4 bg-gray-100 rounded-lg text-center font-mono text-lg text-gray-800 shadow-inner">$\Delta R = K \times (S_A - E_A) \times GDM$</div>
-                        Кожен гравець команди-переможця додає собі розраховану зміну до рейтингу, а кожен гравець команди, що програла, – віднімає її.
-                    </li>
-                </ol>
+                <p>Формула розрахунку зміни рейтингу виглядає так:</p>
+                <div class="my-3 p-4 bg-gray-100 rounded-lg text-center font-mono text-gray-800 shadow-inner">Зміна = K-фактор × (Результат - Очікування) × GDM</div>
+                <p>Де "Результат" дорівнює 1 для перемоги і 0 для поразки, а "Очікування" – це шанс на перемогу, розрахований на основі різниці рейтингів. Давайте розглянемо на конкретному прикладі.</p>
 
                 <h3 class="text-xl font-bold mt-8 mb-4 text-gray-800 border-b pb-2">Приклад розрахунку</h3>
                 <p>Уявімо, що грають дві пари:</p>
@@ -87,30 +70,36 @@
                     <li><strong>Команда А:</strong> Іван (1600 Ело) та Ігор (1450 Ело)</li>
                     <li><strong>Команда Б:</strong> Михайло (1550 Ело) та Ольга (1420 Ело)</li>
                 </ul>
-                <p>Середній рейтинг Команди А: $R_A = (1600 + 1450) / 2 = \mathbf{1525}$.<br>
-                Середній рейтинг Команди Б: $R_B = (1550 + 1420) / 2 = \mathbf{1485}$.</p>
-                <p>Очікуваний результат для Команди А: $E_A = 1 / (1 + 10^{(1485 - 1525) / 400}) \approx \mathbf{0.557}$.</p>
+                <p class="mt-4"><strong>Крок 1: Визначаємо середній рейтинг команд</strong></p>
+                <ul class="list-none ml-5 my-2">
+                    <li>Команда А: (1600 + 1450) / 2 = <strong>1525</strong></li>
+                    <li>Команда Б: (1550 + 1420) / 2 = <strong>1485</strong></li>
+                </ul>
+                <p class="mt-4"><strong>Крок 2: Оцінюємо очікування</strong><br>
+                Оскільки рейтинг Команди А вищий, вона є фаворитом. Система розраховує, що її шанс на перемогу становить приблизно <strong>55.7%</strong> (або 0.557).</p>
                 
                 <div class="example-block">
-                    <h4 class="text-lg font-semibold text-green-700">Випадок 1: Команда А виграє з рахунком 6:2</h4>
+                    <h4 class="text-lg font-semibold text-green-700">Випадок 1: Команда А (фаворит) виграє з рахунком 6:2</h4>
                     <ul class="list-disc list-inside ml-5 mt-2 space-y-1">
-                        <li>Фактичний результат ($S_A$): <strong>1</strong> (перемога)</li>
-                        <li>Різниця в геймах: $6 - 2 = 4$</li>
-                        <li>Множник GDM: $1 + (0.1 \times 4) = \mathbf{1.4}$</li>
-                        <li>Зміна рейтингу: $\Delta R = 30 \times (1 - 0.557) \times 1.4 \approx \mathbf{+18.6}$</li>
+                        <li><strong>Результат:</strong> 1 (оскільки Команда А перемогла).</li>
+                        <li><strong>Різниця в геймах:</strong> 6 - 2 = 4.</li>
+                        <li><strong>Множник GDM:</strong> 1 + (0.1 × 4) = <strong>1.4</strong>. (Переконлива перемога збільшує "вагу" гри).</li>
+                        <li><strong>Розрахунок зміни:</strong><br>
+                        <span class="font-mono">30 × (1 - 0.557) × 1.4 ≈ <strong>+18.6</strong></span></li>
                     </ul>
-                    <p class="mt-3 font-semibold">Результат: Іван та Ігор отримують по +18.6 очок Ело. Михайло та Ольга втрачають по -18.6 очок.</p>
+                    <p class="mt-3 font-semibold text-gray-800">Підсумок: Іван та Ігор отримують по +18.6 очок Ело. Михайло та Ольга втрачають по 18.6 очок.</p>
                 </div>
                 
                 <div class="example-block">
-                    <h4 class="text-lg font-semibold text-blue-700">Випадок 2: Команда Б виграє з рахунком 6:4 (Команда А програє 4:6)</h4>
+                    <h4 class="text-lg font-semibold text-blue-700">Випадок 2: Команда Б (аутсайдер) виграє з рахунком 6:4</h4>
                      <ul class="list-disc list-inside ml-5 mt-2 space-y-1">
-                        <li>Фактичний результат ($S_A$): <strong>0</strong> (поразка)</li>
-                        <li>Різниця в геймах: $6 - 4 = 2$</li>
-                        <li>Множник GDM: $1 + (0.1 \times 2) = \mathbf{1.2}$</li>
-                        <li>Зміна рейтингу: $\Delta R = 30 \times (0 - 0.557) \times 1.2 \approx \mathbf{-20.1}$</li>
+                        <li><strong>Результат:</strong> 0 (оскільки Команда А програла).</li>
+                        <li><strong>Різниця в геймах:</strong> 6 - 4 = 2.</li>
+                        <li><strong>Множник GDM:</strong> 1 + (0.1 × 2) = <strong>1.2</strong>.</li>
+                        <li><strong>Розрахунок зміни:</strong><br>
+                        <span class="font-mono">30 × (0 - 0.557) × 1.2 ≈ <strong>-20.1</strong></span></li>
                     </ul>
-                    <p class="mt-3 font-semibold">Результат: Іван та Ігор втрачають по -20.1 очок Ело. Михайло та Ольга отримують по +20.1 очок.</p>
+                    <p class="mt-3 font-semibold text-gray-800">Підсумок: Іван та Ігор втрачають по 20.1 очок Ело. Михайло та Ольга отримують по +20.1 очок. (Перемога аутсайдера винагороджується більшою кількістю очок).</p>
                 </div>
 
                 <h3 class="text-xl font-bold mt-8 mb-4 text-gray-800 border-b pb-2">Що таке "Сетовий рейтинг"?</h3>
