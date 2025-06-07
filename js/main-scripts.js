@@ -1,48 +1,39 @@
 // js/main-scripts.js
 
-let allPlayersData = []; // Зберігаємо завантажені дані тут, щоб не робити повторні запити
-let currentRatingMode = 'elo'; // 'elo' або 'set'
+let allPlayersData = []; 
+let currentRatingMode = 'elo'; // 'elo', 'set', або 'winrate'
 
-// Прив'язуємо події після завантаження сторінки
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
 
     const eloBtn = document.getElementById('elo-rating-btn');
     const setBtn = document.getElementById('set-rating-btn');
+    const winrateBtn = document.getElementById('winrate-btn');
 
-    eloBtn.addEventListener('click', () => {
-        if (currentRatingMode !== 'elo') {
-            currentRatingMode = 'elo';
-            updateButtonStyles();
-            renderPlayerList();
-        }
-    });
-
-    setBtn.addEventListener('click', () => {
-        if (currentRatingMode !== 'set') {
-            currentRatingMode = 'set';
-            updateButtonStyles();
-            renderPlayerList();
-        }
-    });
+    eloBtn.addEventListener('click', () => switchMode('elo'));
+    setBtn.addEventListener('click', () => switchMode('set'));
+    winrateBtn.addEventListener('click', () => switchMode('winrate'));
 });
 
-// Головна функція ініціалізації
+function switchMode(newMode) {
+    if (currentRatingMode !== newMode) {
+        currentRatingMode = newMode;
+        updateButtonStyles();
+        renderPlayerList();
+    }
+}
+
 async function initializeApp() {
     const playersListDiv = document.getElementById('players-ranking-list');
     playersListDiv.innerHTML = '<p class="p-4 text-center text-gray-500">Завантаження рейтингу гравців...</p>';
 
-    const tableName = 'Players';
-    const sortField = 'Elo'; // Початкове сортування завжди за Ело
-    const sortDirection = 'desc';
-    const viewName = 'Grid view'; 
-    const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableName}?maxRecords=100&view=${encodeURIComponent(viewName)}&sort[0][field]=${sortField}&sort[0][direction]=${sortDirection}`;
+    // Додаємо GamesWon до списку полів для завантаження
+    const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Players?maxRecords=100&view=Grid%20view&fields[]=Name&fields[]=Elo&fields[]=GamesPlayed&fields[]=GamesWon&fields[]=Photo&sort[0][field]=Elo&sort[0][direction]=desc`;
 
     try {
         const response = await fetch(url, { headers: { 'Authorization': `Bearer ${AIRTABLE_PERSONAL_ACCESS_TOKEN}` } });
-        if (!response.ok) {
-            throw new Error(`Помилка завантаження даних: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Помилка завантаження даних: ${response.status}`);
+        
         const data = await response.json();
         allPlayersData = data.records; 
         renderPlayerList(); 
@@ -53,40 +44,41 @@ async function initializeApp() {
     }
 }
 
-// Функція для розрахунку сетового рейтингу
 function calculateSetRating(playerFields) {
     const elo = playerFields.Elo || 1500;
     const games = playerFields.GamesPlayed || 0;
-    
-    if (games === 0) {
-        return 0;
-    }
-    
+    if (games === 0) return 0;
     return (elo - 1500) / games;
 }
 
-// Оновлення стилів кнопок-перемикачів
+function calculateWinRate(playerFields) {
+    const gamesWon = playerFields.GamesWon || 0;
+    const gamesPlayed = playerFields.GamesPlayed || 0;
+    if (gamesPlayed === 0) return 0;
+    return (gamesWon / gamesPlayed) * 100;
+}
+
 function updateButtonStyles() {
-    const eloBtn = document.getElementById('elo-rating-btn');
-    const setBtn = document.getElementById('set-rating-btn');
+    const buttons = {
+        elo: document.getElementById('elo-rating-btn'),
+        set: document.getElementById('set-rating-btn'),
+        winrate: document.getElementById('winrate-btn')
+    };
 
     const activeClasses = ['text-white', 'bg-blue-600', 'shadow-md'];
     const inactiveClasses = ['text-blue-700', 'bg-white', 'border', 'border-blue-300', 'hover:bg-blue-50'];
 
-    if (currentRatingMode === 'elo') {
-        eloBtn.classList.add(...activeClasses);
-        eloBtn.classList.remove(...inactiveClasses);
-        setBtn.classList.add(...inactiveClasses);
-        setBtn.classList.remove(...activeClasses);
-    } else { // 'set' mode
-        setBtn.classList.add(...activeClasses);
-        setBtn.classList.remove(...inactiveClasses);
-        eloBtn.classList.add(...inactiveClasses);
-        eloBtn.classList.remove(...activeClasses);
+    for (const mode in buttons) {
+        if (mode === currentRatingMode) {
+            buttons[mode].classList.add(...activeClasses);
+            buttons[mode].classList.remove(...inactiveClasses);
+        } else {
+            buttons[mode].classList.add(...inactiveClasses);
+            buttons[mode].classList.remove(...activeClasses);
+        }
     }
 }
 
-// Головна функція для відображення списку гравців
 function renderPlayerList() {
     const playersListDiv = document.getElementById('players-ranking-list');
     playersListDiv.innerHTML = ''; 
@@ -95,8 +87,10 @@ function renderPlayerList() {
 
     if (currentRatingMode === 'elo') {
         sortedPlayers.sort((a, b) => (b.fields.Elo || 0) - (a.fields.Elo || 0));
-    } else { // 'set' mode
+    } else if (currentRatingMode === 'set') {
         sortedPlayers.sort((a, b) => calculateSetRating(b.fields) - calculateSetRating(a.fields));
+    } else { // winrate
+        sortedPlayers.sort((a, b) => calculateWinRate(b.fields) - calculateWinRate(a.fields));
     }
     
     if (sortedPlayers.length > 0) {
@@ -104,39 +98,36 @@ function renderPlayerList() {
         sortedPlayers.forEach(playerRecord => {
             const player = playerRecord.fields;
             const playerId = playerRecord.id;
-
-            // --- ОСНОВНА ЗМІНА ТУТ ---
-            // Створюємо посилання <a>, яке обгортає всю картку
-            const playerLink = document.createElement('a');
-            playerLink.href = `player.html?id=${playerId}`;
-            playerLink.className = 'block p-4 hover:bg-gray-50 transition-colors'; // Робимо посилання блочним елементом
+            const playerCardLink = document.createElement('a');
+            playerCardLink.href = `player.html?id=${playerId}`;
+            playerCardLink.className = 'block p-4 hover:bg-gray-50 transition-colors';
 
             const photoUrl = (player.Photo && player.Photo.length > 0) ? player.Photo[0].url : 'https://via.placeholder.com/48';
             const rankColor = (rank === 1 && currentRatingMode === 'elo') ? 'text-yellow-500' : 'text-gray-400';
             const gamesPlayed = player.GamesPlayed !== undefined ? player.GamesPlayed : 'N/A';
             
-            let ratingHtml;
+            let mainStatHtml, otherStatHtml;
+
             if (currentRatingMode === 'elo') {
-                const elo = player.Elo !== undefined ? player.Elo.toFixed(0) : 'N/A';
-                ratingHtml = `<div class="text-sm text-gray-600">Рейтинг Ело: <span class="font-semibold text-blue-600">${elo}</span></div>`;
-            } else {
-                const setRating = calculateSetRating(player).toFixed(3);
-                ratingHtml = `<div class="text-sm text-gray-600">Сетовий рейтинг: <span class="font-semibold text-blue-600">${setRating}</span></div>`;
+                mainStatHtml = `Рейтинг Ело: <span class="font-semibold text-blue-600">${(player.Elo || 1500).toFixed(0)}</span>`;
+            } else if (currentRatingMode === 'set') {
+                mainStatHtml = `Сетовий рейтинг: <span class="font-semibold text-blue-600">${calculateSetRating(player).toFixed(3)}</span>`;
+            } else { // winrate
+                mainStatHtml = `Win Rate: <span class="font-semibold text-blue-600">${calculateWinRate(player).toFixed(2)}%</span>`;
             }
-            
-            // Внутрішній HTML картки вставляємо в посилання
-            playerLink.innerHTML = `
+
+            playerCardLink.innerHTML = `
                 <div class="flex items-center space-x-4">
-                    <img alt="${player.Name || 'Фото гравця'}" class="w-12 h-12 rounded-full object-cover" src="${photoUrl}"/>
+                    <img alt="${player.Name || 'N/A'}" class="w-12 h-12 rounded-full object-cover" src="${photoUrl}"/>
                     <div class="flex-grow">
                         <div class="font-medium text-gray-800">${player.Name || 'N/A'}</div>
-                        ${ratingHtml}
+                        <div class="text-sm text-gray-600">${mainStatHtml}</div>
                         <div class="text-sm text-gray-500">Зіграно сетів: ${gamesPlayed}</div>
                     </div>
                     <div class="text-xl font-bold ${rankColor}">#${rank}</div>
                 </div>
             `;
-            playersListDiv.appendChild(playerLink); // Додаємо посилання (з карткою всередині) до списку
+            playersListDiv.appendChild(playerCardLink);
             rank++;
         });
     } else {
