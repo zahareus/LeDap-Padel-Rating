@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Про рейтинги - LeDap Padel Rating</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f7fafc;
+        }
+    </style>
+</head>
+<body>
+    <header class="bg-blue-600 text-white py-6 shadow-md">
+        <div class="container mx-auto px-4 flex flex-col sm:flex-row justify-between items-center">
+            <h1 class="text-2xl font-bold flex items-center">
+                <span class="material-icons mr-2 text-yellow-400">sports_tennis</span>
+                LeDap Padel Rating Torrevieja
+            </h1>
+            <nav class="mt-4 sm:mt-0 flex space-x-4">
+                <a class="flex items-center hover:text-yellow-300 transition-colors" href="index.html">
+                    <span class="material-icons mr-1">leaderboard</span>Рейтинг
+                </a>
+                <a class="flex items-center hover:text-yellow-300 transition-colors" href="games.html">
+                    <span class="material-icons mr-1">sports_esports</span>Ігри
+                </a>
+                <a class="flex items-center hover:text-yellow-300 transition-colors" href="ratings-info.html">
+                    <span class="material-icons mr-1">info</span>Про рейтинги
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="bg-white shadow-lg rounded-lg p-6 md:p-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6 text-center">Про Системи Рейтингів LeDap</h2>
+            
+            <div class="prose max-w-none text-gray-700">
+                <p>Наш сервіс використовує кілька показників для оцінки рівня майстерності та ефективності гравців. Основний – це рейтинг Ело, доповнений Сетовим рейтингом та показником Win Rate.</p>
+
+                <h3 class="text-xl font-bold mt-8 mb-4 text-gray-800 border-b pb-2">Рейтинг Ело</h3>
+                <p>Класична система, що оцінює відносну силу гравців. Чим сильніший суперник, якого ви перемагаєте, тим більше очок ви отримуєте.</p>
+                <p>Формула розрахунку зміни рейтингу:</p>
+                <div class="my-3 p-4 bg-gray-100 rounded-lg text-center font-mono text-gray-800 shadow-inner">Зміна = K-фактор × (Результат - Очікування) × GDM</div>
+                <p>Де "Результат" – це 1 за перемогу і 0 за поразку, "Очікування" – шанс на перемогу, розрахований на основі різниці рейтингів, а "GDM" – множник, що залежить від різниці в геймах.</p>
+
+                <h3 class="text-xl font-bold mt-8 mb-4 text-gray-800 border-b pb-2">Сетовий рейтинг</h3>
+                <p>Це показник, який демонструє, скільки в середньому очок Ело гравець здобуває (або втрачає) за один зіграний сет. Він допомагає порівнювати ефективність гравців з різною кількістю ігор.</p>
+                <p>Формула розрахунку:</p>
+                <div class="my-3 p-4 bg-gray-100 rounded-lg text-center font-mono text-gray-800 shadow-inner">(Поточний Ело - 1500) / Кількість зіграних сетів</div>
+                
+                <h3 class="text-xl font-bold mt-8 mb-4 text-gray-800 border-b pb-2">Win Rate</h3>
+                <p>Це найпростіший для розуміння показник – відсоток виграних сетів від загальної кількості зіграних. Він прямо показує, як часто гравець перемагає.</p>
+                <p>Формула розрахунку:</p>
+                <div class="my-3 p-4 bg-gray-100 rounded-lg text-center font-mono text-gray-800 shadow-inner">(Кількість виграних сетів / Загальна кількість зіграних сетів) × 100%</div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="py-6 text-center text-gray-500 text-sm">
+        © 2025 LeDap Padel Torrevieja. Всі права захищені.
+    </footer>
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html>
