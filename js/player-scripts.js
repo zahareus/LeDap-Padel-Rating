@@ -1,6 +1,7 @@
 // js/player-scripts.js
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    await fetchAllPlayersForProfile();
     initializePlayerPage();
 });
 
@@ -231,4 +232,13 @@ function renderPlayerGames(container, gamesCountElement, matches, playerFields, 
 
     container.innerHTML = '';
     container.appendChild(gamesContainer);
+}
+
+// Fetch all players with photos for avatar rendering in match history
+async function fetchAllPlayersForProfile() {
+    const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Players?maxRecords=100&view=Grid%20view&fields[]=Name&fields[]=Photo`;
+    const response = await fetch(url, { headers: { 'Authorization': `Bearer ${AIRTABLE_PERSONAL_ACCESS_TOKEN}` } });
+    if (!response.ok) throw new Error('Не вдалося завантажити список гравців для фото.');
+    const data = await response.json();
+    window.allPlayersData = data.records;
 }
