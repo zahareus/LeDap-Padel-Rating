@@ -1,5 +1,17 @@
 // js/games-scripts.js
-document.addEventListener('DOMContentLoaded', function() {
+let allPlayersData = [];
+
+// Завантажити всіх гравців для фото
+async function fetchAllPlayersForGames() {
+    const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Players?maxRecords=100&view=Grid%20view&fields[]=Name&fields[]=Photo`;
+    const response = await fetch(url, { headers: { 'Authorization': `Bearer ${AIRTABLE_PERSONAL_ACCESS_TOKEN}` } });
+    if (!response.ok) throw new Error('Не вдалося завантажити список гравців для фото.');
+    const data = await response.json();
+    allPlayersData = data.records;
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+    await fetchAllPlayersForGames();
     fetchAndDisplayGames();
 });
 
@@ -58,7 +70,7 @@ async function fetchAndDisplayGames() {
                     const gameElement = document.createElement('div');
                     gameElement.className = 'p-4';
 
-                    // --- ПОЧАТОК НОВОЇ ЛОГІКИ ВІДОБРАЖЕННЯ ---
+                    // --- ПОЧАТОК ОНОВЛЕНОЇ ЛОГІКИ ВІДОБРАЖЕННЯ ---
                     const t1p1Name = match.T1P1_Name ? match.T1P1_Name[0] : 'N/A';
                     const t1p1Elo = match.T1P1_Elo_Before !== undefined ? `(${match.T1P1_Elo_Before})` : '';
                     const t1p2Name = match.T1P2_Name ? match.T1P2_Name[0] : 'N/A';
@@ -69,30 +81,51 @@ async function fetchAndDisplayGames() {
                     const t2p2Name = match.T2P2_Name ? match.T2P2_Name[0] : 'N/A';
                     const t2p2Elo = match.T2P2_Elo_Before !== undefined ? `(${match.T2P2_Elo_Before})` : '';
 
+                    const t1p1Photo = getPlayerPhotoByName(t1p1Name);
+                    const t1p2Photo = getPlayerPhotoByName(t1p2Name);
+                    const t2p1Photo = getPlayerPhotoByName(t2p1Name);
+                    const t2p2Photo = getPlayerPhotoByName(t2p2Name);
+
                     const score1 = match.Team1_Score !== undefined ? match.Team1_Score : '-';
                     const score2 = match.Team2_Score !== undefined ? match.Team2_Score : '-';
-                    const eloExchanged = match.Elo_Exchanged !== undefined ? `(${match.Elo_Exchanged})` : '';
+                    const eloExchanged = match.Elo_Exchanged !== undefined ? match.Elo_Exchanged : '';
 
                     const team1WinnerClass = score1 > score2 ? 'winner' : '';
                     const team2WinnerClass = score2 > score1 ? 'winner' : '';
 
                     gameElement.innerHTML = `
-                        <div class="flex justify-between items-center text-gray-800">
-                            <div class="team text-right w-2/5 ${team1WinnerClass}">
-                                <strong class="font-medium">${t1p1Name}</strong> <span class="text-sm text-gray-500">${t1p1Elo}</span> / 
-                                <strong class="font-medium">${t1p2Name}</strong> <span class="text-sm text-gray-500">${t1p2Elo}</span>
+                        <div class="flex flex-col md:flex-row items-stretch text-gray-800 w-full text-base min-h-[56px]">
+                            <div class="flex flex-col w-full md:w-2/5 items-start pl-2 gap-1 justify-start">
+                                <div class="flex flex-row items-center gap-2 w-full justify-start">
+                                    <img src="${t1p1Photo}" alt="${t1p1Name}" class="w-8 h-8 rounded-full object-cover"/>
+                                    <span class="font-medium">${t1p1Name}</span>
+                                    <span class="text-xs text-gray-500">${t1p1Elo}</span>
+                                </div>
+                                <div class="flex flex-row items-center gap-2 w-full justify-start">
+                                    <img src="${t1p2Photo}" alt="${t1p2Name}" class="w-8 h-8 rounded-full object-cover"/>
+                                    <span class="font-medium">${t1p2Name}</span>
+                                    <span class="text-xs text-gray-500">${t1p2Elo}</span>
+                                </div>
                             </div>
-                            <div class="font-bold text-lg text-blue-600 px-4">
-                                ${score1} : ${score2}
-                                <span class="block text-xs font-normal text-gray-500">${eloExchanged}</span>
+                            <div class="flex flex-col items-center w-full md:w-1/5 min-w-[120px] justify-center py-2">
+                                <span class="font-bold text-lg text-blue-600">${score1} : ${score2}</span>
+                                <span class="text-xs font-normal text-gray-500 mt-1">${eloExchanged}</span>
                             </div>
-                            <div class="team text-left w-2/5 ${team2WinnerClass}">
-                                <strong class="font-medium">${t2p1Name}</strong> <span class="text-sm text-gray-500">${t2p1Elo}</span> / 
-                                <strong class="font-medium">${t2p2Name}</strong> <span class="text-sm text-gray-500">${t2p2Elo}</span>
+                            <div class="flex flex-col w-full md:w-2/5 items-start md:items-end md:pl-2 gap-1 justify-start md:justify-end">
+                                <div class="flex flex-row items-center gap-2 w-full md:justify-end justify-start">
+                                    <img src="${t2p1Photo}" alt="${t2p1Name}" class="w-8 h-8 rounded-full object-cover"/>
+                                    <span class="font-medium">${t2p1Name}</span>
+                                    <span class="text-xs text-gray-500">${t2p1Elo}</span>
+                                </div>
+                                <div class="flex flex-row items-center gap-2 w-full md:justify-end justify-start">
+                                    <img src="${t2p2Photo}" alt="${t2p2Name}" class="w-8 h-8 rounded-full object-cover"/>
+                                    <span class="font-medium">${t2p2Name}</span>
+                                    <span class="text-xs text-gray-500">${t2p2Elo}</span>
+                                </div>
                             </div>
                         </div>
                     `;
-                    // --- КІНЕЦЬ НОВОЇ ЛОГІКИ ВІДОБРАЖЕННЯ ---
+                    // --- КІНЕЦЬ ОНОВЛЕНОЇ ЛОГІКИ ВІДОБРАЖЕННЯ ---
                     gamesContainerForDate.appendChild(gameElement);
                 }
             });
@@ -104,4 +137,16 @@ async function fetchAndDisplayGames() {
         console.error('Сталася помилка під час виконання запиту на отримання ігор:', error);
         gamesListContainer.innerHTML = `<p class="p-4 text-center text-red-500">Сталася помилка при завантаженні списку ігор.</p>`;
     }
+}
+
+// Helper to get player photo by name
+function getPlayerPhotoByName(name) {
+    if (allPlayersData && allPlayersData.length > 0) {
+        for (const player of allPlayersData) {
+            if (player.fields.Name === name && player.fields.Photo && player.fields.Photo.length > 0) {
+                return player.fields.Photo[0].url;
+            }
+        }
+    }
+    return 'https://via.placeholder.com/32';
 }

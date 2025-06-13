@@ -83,54 +83,88 @@ function renderPlayerList() {
     const playersListDiv = document.getElementById('players-ranking-list');
     playersListDiv.innerHTML = ''; 
 
-    let sortedPlayers = [...allPlayersData];
-
-    if (currentRatingMode === 'elo') {
-        sortedPlayers.sort((a, b) => (b.fields.Elo || 0) - (a.fields.Elo || 0));
-    } else if (currentRatingMode === 'set') {
-        sortedPlayers.sort((a, b) => calculateSetRating(b.fields) - calculateSetRating(a.fields));
-    } else { // winrate
-        sortedPlayers.sort((a, b) => calculateWinRate(b.fields) - calculateWinRate(a.fields));
-    }
+    let allPlayers = [...allPlayersData];
     
-    if (sortedPlayers.length > 0) {
-        let rank = 1;
-        sortedPlayers.forEach(playerRecord => {
-            const player = playerRecord.fields;
-            const playerId = playerRecord.id;
-            const playerCardLink = document.createElement('a');
-            playerCardLink.href = `player.html?id=${playerId}`;
-            playerCardLink.className = 'block p-4 hover:bg-gray-50 transition-colors';
+    // Split players into two groups
+    let experiencedPlayers = allPlayers.filter(player => (player.fields.GamesPlayed || 0) >= 10);
+    let newPlayers = allPlayers.filter(player => (player.fields.GamesPlayed || 0) < 10);
 
-            const photoUrl = (player.Photo && player.Photo.length > 0) ? player.Photo[0].url : 'https://via.placeholder.com/48';
-            const rankColor = (rank === 1 && currentRatingMode === 'elo') ? 'text-yellow-500' : 'text-gray-400';
-            const gamesPlayed = player.GamesPlayed !== undefined ? player.GamesPlayed : 'N/A';
-            
-            let mainStatHtml, otherStatHtml;
+    // Sort both groups
+    const sortPlayers = (players) => {
+        if (currentRatingMode === 'elo') {
+            return players.sort((a, b) => (b.fields.Elo || 0) - (a.fields.Elo || 0));
+        } else if (currentRatingMode === 'set') {
+            return players.sort((a, b) => calculateSetRating(b.fields) - calculateSetRating(a.fields));
+        } else { // winrate
+            return players.sort((a, b) => calculateWinRate(b.fields) - calculateWinRate(a.fields));
+        }
+    };
 
-            if (currentRatingMode === 'elo') {
-                mainStatHtml = `Рейтинг Ело: <span class="font-semibold text-blue-600">${(player.Elo || 1500).toFixed(0)}</span>`;
-            } else if (currentRatingMode === 'set') {
-                mainStatHtml = `Сетовий рейтинг: <span class="font-semibold text-blue-600">${calculateSetRating(player).toFixed(3)}</span>`;
-            } else { // winrate
-                mainStatHtml = `Win Rate: <span class="font-semibold text-blue-600">${calculateWinRate(player).toFixed(2)}%</span>`;
-            }
+    experiencedPlayers = sortPlayers(experiencedPlayers);
+    newPlayers = sortPlayers(newPlayers);
 
-            playerCardLink.innerHTML = `
-                <div class="flex items-center space-x-4">
-                    <img alt="${player.Name || 'N/A'}" class="w-12 h-12 rounded-full object-cover" src="${photoUrl}"/>
-                    <div class="flex-grow">
-                        <div class="font-medium text-gray-800">${player.Name || 'N/A'}</div>
-                        <div class="text-sm text-gray-600">${mainStatHtml}</div>
-                        <div class="text-sm text-gray-500">Зіграно сетів: ${gamesPlayed}</div>
-                    </div>
-                    <div class="text-xl font-bold ${rankColor}">#${rank}</div>
-                </div>
-            `;
-            playersListDiv.appendChild(playerCardLink);
-            rank++;
-        });
+    // Combine both groups for rank calculation
+    const allSortedPlayers = [...experiencedPlayers, ...newPlayers];
+    
+    if (allSortedPlayers.length > 0) {
+        // Render experienced players
+        if (experiencedPlayers.length > 0) {
+            experiencedPlayers.forEach((playerRecord, index) => {
+                renderPlayerCard(playerRecord, index + 1, playersListDiv, false);
+            });
+        }
+
+        // Add separator if both groups exist
+        if (experiencedPlayers.length > 0 && newPlayers.length > 0) {
+            const separator = document.createElement('div');
+            separator.className = 'p-4 bg-gray-50 text-center text-gray-500 border-t border-b border-gray-200';
+            separator.textContent = 'Гравці з менше ніж 10 сетами';
+            playersListDiv.appendChild(separator);
+        }
+
+        // Render new players
+        if (newPlayers.length > 0) {
+            newPlayers.forEach((playerRecord, index) => {
+                const globalRank = experiencedPlayers.length + index + 1;
+                renderPlayerCard(playerRecord, globalRank, playersListDiv, true);
+            });
+        }
     } else {
         playersListDiv.innerHTML = '<p class="p-4 text-center text-gray-500">Поки що немає жодного гравця в рейтингу.</p>';
     }
+}
+
+function renderPlayerCard(playerRecord, rank, container, isNewPlayer) {
+    const player = playerRecord.fields;
+    const playerId = playerRecord.id;
+    const playerCardLink = document.createElement('a');
+    playerCardLink.href = `player.html?id=${playerId}`;
+    playerCardLink.className = `block p-4 hover:bg-gray-50 transition-colors ${isNewPlayer ? 'opacity-75' : ''}`;
+
+    const photoUrl = (player.Photo && player.Photo.length > 0) ? player.Photo[0].url : 'https://via.placeholder.com/48';
+    const rankColor = (rank === 1 && currentRatingMode === 'elo' && !isNewPlayer) ? 'text-yellow-500' : 'text-gray-400';
+    const gamesPlayed = player.GamesPlayed !== undefined ? player.GamesPlayed : 'N/A';
+    
+    let mainStatHtml;
+
+    if (currentRatingMode === 'elo') {
+        mainStatHtml = `Рейтинг Ело: <span class="font-semibold ${isNewPlayer ? 'text-gray-600' : 'text-blue-600'}">${(player.Elo || 1500).toFixed(0)}</span>`;
+    } else if (currentRatingMode === 'set') {
+        mainStatHtml = `Сетовий рейтинг: <span class="font-semibold ${isNewPlayer ? 'text-gray-600' : 'text-blue-600'}">${calculateSetRating(player).toFixed(3)}</span>`;
+    } else { // winrate
+        mainStatHtml = `Win Rate: <span class="font-semibold ${isNewPlayer ? 'text-gray-600' : 'text-blue-600'}">${calculateWinRate(player).toFixed(2)}%</span>`;
+    }
+
+    playerCardLink.innerHTML = `
+        <div class="flex items-center space-x-4">
+            <img alt="${player.Name || 'N/A'}" class="w-12 h-12 rounded-full object-cover ${isNewPlayer ? 'grayscale' : ''}" src="${photoUrl}"/>
+            <div class="flex-grow">
+                <div class="font-medium ${isNewPlayer ? 'text-gray-600' : 'text-gray-800'}">${player.Name || 'N/A'}</div>
+                <div class="text-sm ${isNewPlayer ? 'text-gray-500' : 'text-gray-600'}">${mainStatHtml}</div>
+                <div class="text-sm text-gray-500">Зіграно сетів: ${gamesPlayed}</div>
+            </div>
+            <div class="text-xl font-bold ${rankColor}">#${rank}</div>
+        </div>
+    `;
+    container.appendChild(playerCardLink);
 }
