@@ -94,36 +94,36 @@ async function fetchAndDisplayGames() {
                     const team2WinnerClass = score2 > score1 ? 'winner' : '';
 
                     gameElement.innerHTML = `
-                        <div class="flex flex-row items-center text-gray-800 w-full text-base min-h-[40px]">
+                        <div class="flex flex-row items-center text-gray-800 w-full text-base min-h-[32px]">
                             <!-- Ліва команда -->
                             <div class="flex flex-col w-2/5 items-start justify-center gap-y-0.5">
-                                <div class="flex flex-row items-center gap-x-1">
-                                    <img src="${t1p1Photo}" alt="${t1p1Name}" class="w-5 h-5 md:w-8 md:h-8 rounded-full object-cover"/>
-                                    <span class="font-medium text-[10px] md:text-base">${t1p1Name}</span>
-                                    <span class="text-[10px] md:text-xs text-gray-400">${t1p1Elo}</span>
+                                <div class="flex flex-row items-center gap-x-0.5 flex-nowrap overflow-x-auto">
+                                    <img src="${t1p1Photo}" alt="${t1p1Name}" class="w-4 h-4 rounded-full object-cover"/>
+                                    <span class="text-[8px] max-w-[48px] truncate whitespace-nowrap ml-0.5" title="${t1p1Name}">${t1p1Name}</span>
+                                    <span class="text-[8px] text-gray-400 ml-0.5">${t1p1Elo}</span>
                                 </div>
-                                <div class="flex flex-row items-center gap-x-1">
-                                    <img src="${t1p2Photo}" alt="${t1p2Name}" class="w-5 h-5 md:w-8 md:h-8 rounded-full object-cover"/>
-                                    <span class="font-medium text-[10px] md:text-base">${t1p2Name}</span>
-                                    <span class="text-[10px] md:text-xs text-gray-400">${t1p2Elo}</span>
+                                <div class="flex flex-row items-center gap-x-0.5 flex-nowrap overflow-x-auto">
+                                    <img src="${t1p2Photo}" alt="${t1p2Name}" class="w-4 h-4 rounded-full object-cover"/>
+                                    <span class="text-[8px] max-w-[48px] truncate whitespace-nowrap ml-0.5" title="${t1p2Name}">${t1p2Name}</span>
+                                    <span class="text-[8px] text-gray-400 ml-0.5">${t1p2Elo}</span>
                                 </div>
                             </div>
                             <!-- Центр -->
-                            <div class="flex flex-col items-center w-1/5 min-w-[60px] md:min-w-[120px] justify-center py-1">
+                            <div class="flex flex-col items-center w-1/5 min-w-[44px] md:min-w-[120px] justify-center py-0.5">
                                 <span class="font-bold text-base md:text-lg text-blue-600">${score1} : ${score2}</span>
-                                <span class="text-[10px] md:text-xs font-normal text-gray-500 mt-0.5">${eloExchanged}</span>
+                                <span class="text-[8px] md:text-xs font-normal text-gray-500 mt-0.5">${eloExchanged}</span>
                             </div>
                             <!-- Права команда -->
                             <div class="flex flex-col w-2/5 items-end justify-center gap-y-0.5">
-                                <div class="flex flex-row items-center gap-x-1">
-                                    <img src="${t2p1Photo}" alt="${t2p1Name}" class="w-5 h-5 md:w-8 md:h-8 rounded-full object-cover"/>
-                                    <span class="font-medium text-[10px] md:text-base">${t2p1Name}</span>
-                                    <span class="text-[10px] md:text-xs text-gray-400">${t2p1Elo}</span>
+                                <div class="flex flex-row items-center gap-x-0.5 flex-nowrap overflow-x-auto justify-end">
+                                    <img src="${t2p1Photo}" alt="${t2p1Name}" class="w-4 h-4 rounded-full object-cover"/>
+                                    <span class="text-[8px] max-w-[48px] truncate whitespace-nowrap ml-0.5" title="${t2p1Name}">${t2p1Name}</span>
+                                    <span class="text-[8px] text-gray-400 ml-0.5">${t2p1Elo}</span>
                                 </div>
-                                <div class="flex flex-row items-center gap-x-1">
-                                    <img src="${t2p2Photo}" alt="${t2p2Name}" class="w-5 h-5 md:w-8 md:h-8 rounded-full object-cover"/>
-                                    <span class="font-medium text-[10px] md:text-base">${t2p2Name}</span>
-                                    <span class="text-[10px] md:text-xs text-gray-400">${t2p2Elo}</span>
+                                <div class="flex flex-row items-center gap-x-0.5 flex-nowrap overflow-x-auto justify-end">
+                                    <img src="${t2p2Photo}" alt="${t2p2Name}" class="w-4 h-4 rounded-full object-cover"/>
+                                    <span class="text-[8px] max-w-[48px] truncate whitespace-nowrap ml-0.5" title="${t2p2Name}">${t2p2Name}</span>
+                                    <span class="text-[8px] text-gray-400 ml-0.5">${t2p2Elo}</span>
                                 </div>
                             </div>
                         </div>
