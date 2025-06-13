@@ -139,6 +139,23 @@ function renderPlayerGames(container, gamesCountElement, matches, playerFields, 
         return;
     }
 
+    // Helper to get player photo by name (reuse from games-scripts.js if possible)
+    function getPlayerPhotoByName(name) {
+        if (window.allPlayersData && window.allPlayersData.length > 0) {
+            for (const player of window.allPlayersData) {
+                if (player.fields.Name === name && player.fields.Photo && player.fields.Photo.length > 0) {
+                    return player.fields.Photo[0].url;
+                }
+            }
+        }
+        return 'https://via.placeholder.com/32';
+    }
+    // Helper to truncate name for mobile
+    function shortName(name) {
+        if (!name) return '';
+        return name.length > 6 ? name.slice(0, 6) + '…' : name;
+    }
+
     const gamesContainer = document.createElement('div');
     gamesContainer.className = 'bg-white shadow-lg rounded-lg overflow-hidden divide-y divide-gray-200';
     
@@ -149,17 +166,13 @@ function renderPlayerGames(container, gamesCountElement, matches, playerFields, 
 
         const playerIsOnTeam1 = (match.Team1_Player1 && match.Team1_Player1.includes(currentPlayerId)) || 
                                 (match.Team1_Player2 && match.Team1_Player2.includes(currentPlayerId));
-        
         const playerWon = (playerIsOnTeam1 && match.Team1_Score > match.Team2_Score) || 
                           (!playerIsOnTeam1 && match.Team2_Score > match.Team1_Score);
-        
-        const eloExchanged = match.Elo_Exchanged !== undefined ? `(${match.Elo_Exchanged})` : '';
-        const resultClass = playerWon ? 'text-green-600' : 'text-red-600';
-        const resultText = playerWon ? `Перемога ${eloExchanged}` : `Поразка ${eloExchanged}`;
+        const eloExchanged = match.Elo_Exchanged !== undefined ? match.Elo_Exchanged : '';
+        const eloClass = playerWon ? 'text-green-600' : 'text-red-600';
+        const eloSign = playerWon ? '+' : '-';
+        const eloDisplay = eloExchanged !== '' ? `<span class=\"${eloClass} text-[8px] md:text-xs font-bold ml-1\">${eloSign}${Math.abs(eloExchanged)}</span>` : '';
 
-        const dateObj = new Date(match.MatchDate);
-        const formattedDate = dateObj.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        
         const t1p1Name = match.T1P1_Name ? match.T1P1_Name[0] : 'N/A';
         const t1p1Elo = match.T1P1_Elo_Before !== undefined ? `(${match.T1P1_Elo_Before})` : '';
         const t1p2Name = match.T1P2_Name ? match.T1P2_Name[0] : 'N/A';
@@ -170,29 +183,52 @@ function renderPlayerGames(container, gamesCountElement, matches, playerFields, 
         const t2p2Name = match.T2P2_Name ? match.T2P2_Name[0] : 'N/A';
         const t2p2Elo = match.T2P2_Elo_Before !== undefined ? `(${match.T2P2_Elo_Before})` : '';
 
+        const t1p1Photo = getPlayerPhotoByName(t1p1Name);
+        const t1p2Photo = getPlayerPhotoByName(t1p2Name);
+        const t2p1Photo = getPlayerPhotoByName(t2p1Name);
+        const t2p2Photo = getPlayerPhotoByName(t2p2Name);
+
+        const score1 = match.Team1_Score !== undefined ? match.Team1_Score : '-';
+        const score2 = match.Team2_Score !== undefined ? match.Team2_Score : '-';
+
         gameElement.innerHTML = `
-            <div class="flex justify-between items-center">
-                <div class="w-1/5 text-left text-sm">
-                    <div class="font-semibold ${resultClass}">${resultText}</div>
-                    <div class="text-gray-500">${formattedDate}</div>
-                </div>
-                <div class="w-3/5 flex justify-center items-center">
-                    <div class="text-right w-2/5">
-                        <div class="font-medium text-gray-800">${t1p1Name} <span class="text-gray-500 font-normal">${t1p1Elo}</span></div>
-                        <div class="font-medium text-gray-800">${t1p2Name} <span class="text-gray-500 font-normal">${t1p2Elo}</span></div>
+            <div class=\"flex flex-row items-center text-gray-800 w-full text-base min-h-[24px]\">
+                <!-- Ліва команда -->
+                <div class=\"flex flex-col w-2/5 items-start justify-center gap-y-0.5\">
+                    <div class=\"flex flex-row items-center gap-x-0.5 flex-nowrap overflow-x-auto\">
+                        <img src=\"${t1p1Photo}\" alt=\"${t1p1Name}\" class=\"w-4 h-4 rounded-full object-cover\"/>
+                        <span class=\"text-[5px] max-w-[30px] truncate whitespace-nowrap md:text-[inherit] md:max-w-none\" title=\"${t1p1Name}\">${shortName(t1p1Name)}</span>
+                        <span class=\"text-[3px] text-gray-400 font-normal\">${t1p1Elo}</span>
                     </div>
-                    <div class="font-bold text-xl text-blue-600 px-4">${match.Team1_Score} : ${match.Team2_Score}</div>
-                    <div class="text-left w-2/5">
-                        <div class="font-medium text-gray-800">${t2p1Name} <span class="text-sm text-gray-500">${t2p1Elo}</span></div>
-                        <div class="font-medium text-gray-800">${t2p2Name} <span class="text-sm text-gray-500">${t2p2Elo}</span></div>
+                    <div class=\"flex flex-row items-center gap-x-0.5 flex-nowrap overflow-x-auto\">
+                        <img src=\"${t1p2Photo}\" alt=\"${t1p2Name}\" class=\"w-4 h-4 rounded-full object-cover\"/>
+                        <span class=\"text-[5px] max-w-[30px] truncate whitespace-nowrap md:text-[inherit] md:max-w-none\" title=\"${t1p2Name}\">${shortName(t1p2Name)}</span>
+                        <span class=\"text-[3px] text-gray-400 font-normal\">${t1p2Elo}</span>
                     </div>
                 </div>
-                <div class="w-1/5"></div>
+                <!-- Центр -->
+                <div class=\"flex flex-col items-center w-1/5 min-w-[36px] md:min-w-[120px] justify-center py-0.5\">
+                    <span class=\"font-bold text-base md:text-lg text-blue-600\">${score1} : ${score2}</span>
+                    ${eloDisplay}
+                </div>
+                <!-- Права команда -->
+                <div class=\"flex flex-col w-2/5 items-end justify-center gap-y-0.5\">
+                    <div class=\"flex flex-row items-center gap-x-0.5 flex-nowrap overflow-x-auto justify-end\">
+                        <img src=\"${t2p1Photo}\" alt=\"${t2p1Name}\" class=\"w-4 h-4 rounded-full object-cover\"/>
+                        <span class=\"text-[5px] max-w-[30px] truncate whitespace-nowrap md:text-[inherit] md:max-w-none\" title=\"${t2p1Name}\">${shortName(t2p1Name)}</span>
+                        <span class=\"text-[3px] text-gray-400 font-normal\">${t2p1Elo}</span>
+                    </div>
+                    <div class=\"flex flex-row items-center gap-x-0.5 flex-nowrap overflow-x-auto justify-end\">
+                        <img src=\"${t2p2Photo}\" alt=\"${t2p2Name}\" class=\"w-4 h-4 rounded-full object-cover\"/>
+                        <span class=\"text-[5px] max-w-[30px] truncate whitespace-nowrap md:text-[inherit] md:max-w-none\" title=\"${t2p2Name}\">${shortName(t2p2Name)}</span>
+                        <span class=\"text-[3px] text-gray-400 font-normal\">${t2p2Elo}</span>
+                    </div>
+                </div>
             </div>
         `;
         gamesContainer.appendChild(gameElement);
     });
 
-    container.innerHTML = ''; 
+    container.innerHTML = '';
     container.appendChild(gamesContainer);
 }
