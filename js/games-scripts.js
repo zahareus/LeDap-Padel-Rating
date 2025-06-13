@@ -93,18 +93,24 @@ async function fetchAndDisplayGames() {
                     const team1WinnerClass = score1 > score2 ? 'winner' : '';
                     const team2WinnerClass = score2 > score1 ? 'winner' : '';
 
+                    // Helper to truncate name for mobile
+                    function shortName(name) {
+                        if (!name) return '';
+                        return name.length > 6 ? name.slice(0, 6) + '…' : name;
+                    }
+
                     gameElement.innerHTML = `
                         <div class="flex flex-row items-center text-gray-800 w-full text-base min-h-[24px]">
                             <!-- Ліва команда -->
                             <div class="flex flex-col w-2/5 items-start justify-center gap-y-0.5">
                                 <div class="flex flex-row items-center gap-x-0.5 flex-nowrap overflow-x-auto">
                                     <img src="${t1p1Photo}" alt="${t1p1Name}" class="w-4 h-4 rounded-full object-cover"/>
-                                    <span class="text-[5px] max-w-[30px] truncate whitespace-nowrap" title="${t1p1Name}">${t1p1Name}</span>
+                                    <span class="text-[5px] max-w-[30px] truncate whitespace-nowrap md:text-[inherit] md:max-w-none" title="${t1p1Name}">${shortName(t1p1Name)}</span>
                                     <span class="text-[3px] text-gray-400 font-normal">${t1p1Elo}</span>
                                 </div>
                                 <div class="flex flex-row items-center gap-x-0.5 flex-nowrap overflow-x-auto">
                                     <img src="${t1p2Photo}" alt="${t1p2Name}" class="w-4 h-4 rounded-full object-cover"/>
-                                    <span class="text-[5px] max-w-[30px] truncate whitespace-nowrap" title="${t1p2Name}">${t1p2Name}</span>
+                                    <span class="text-[5px] max-w-[30px] truncate whitespace-nowrap md:text-[inherit] md:max-w-none" title="${t1p2Name}">${shortName(t1p2Name)}</span>
                                     <span class="text-[3px] text-gray-400 font-normal">${t1p2Elo}</span>
                                 </div>
                             </div>
@@ -117,12 +123,12 @@ async function fetchAndDisplayGames() {
                             <div class="flex flex-col w-2/5 items-end justify-center gap-y-0.5">
                                 <div class="flex flex-row items-center gap-x-0.5 flex-nowrap overflow-x-auto justify-end">
                                     <img src="${t2p1Photo}" alt="${t2p1Name}" class="w-4 h-4 rounded-full object-cover"/>
-                                    <span class="text-[5px] max-w-[30px] truncate whitespace-nowrap" title="${t2p1Name}">${t2p1Name}</span>
+                                    <span class="text-[5px] max-w-[30px] truncate whitespace-nowrap md:text-[inherit] md:max-w-none" title="${t2p1Name}">${shortName(t2p1Name)}</span>
                                     <span class="text-[3px] text-gray-400 font-normal">${t2p1Elo}</span>
                                 </div>
                                 <div class="flex flex-row items-center gap-x-0.5 flex-nowrap overflow-x-auto justify-end">
                                     <img src="${t2p2Photo}" alt="${t2p2Name}" class="w-4 h-4 rounded-full object-cover"/>
-                                    <span class="text-[5px] max-w-[30px] truncate whitespace-nowrap" title="${t2p2Name}">${t2p2Name}</span>
+                                    <span class="text-[5px] max-w-[30px] truncate whitespace-nowrap md:text-[inherit] md:max-w-none" title="${t2p2Name}">${shortName(t2p2Name)}</span>
                                     <span class="text-[3px] text-gray-400 font-normal">${t2p2Elo}</span>
                                 </div>
                             </div>
